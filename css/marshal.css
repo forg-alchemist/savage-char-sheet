@@ -1,0 +1,85 @@
+/* =============================================================
+   MARSHAL — Banner, overlay effects, animations
+   ============================================================= */
+.marshal-banner { display: none; }
+
+.marshal-banner.marshal-banner--on {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 20px;
+  background: rgba(60, 0, 0, 0.88);
+  color: #ff5555;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 5px;
+  border: 2px solid #cc2222;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255,60,60,0.9);
+  animation: marshalPulse 2.2s ease-in-out infinite;
+}
+
+.marshal-banner-skull { font-size: 1.3em; display: inline-block; animation: skullRock 3s ease-in-out infinite; }
+
+.loa-reject-btn {
+  margin-top: 10px;
+  padding: 5px 14px 6px;
+  background: transparent;
+  color: #c04040;
+  border: 1px solid rgba(180,50,50,0.45);
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.loa-reject-btn:hover {
+  background: rgba(180,40,40,0.12);
+  color: #cc2222;
+  border-color: rgba(200,50,50,0.7);
+}
+
+@keyframes marshalPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(200,30,30,0.5); }
+  50%       { box-shadow: 0 0 24px rgba(255,40,40,0.85); }
+}
+
+@keyframes skullRock {
+  0%, 100% { transform: rotate(-12deg); }
+  50%       { transform: rotate(12deg); }
+}
+
+body.marshal-active::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(140,10,10,0.55) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%,  rgba(140,10,10,0.45) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%,  rgba(80,0,0,0.25)   0%, transparent 70%);
+  z-index: 9997;
+  animation: smokeFloat 4s ease-in-out infinite alternate;
+}
+
+body.marshal-active::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 80px rgba(180,0,0,0.45);
+  z-index: 9998;
+}
+
+@keyframes smokeFloat {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.04); }
+}
+
+/* Harrowed (Меченный) mode styles live in css/harrowed.css */

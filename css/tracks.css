@@ -1,0 +1,175 @@
+/* =============================================================
+   TRACKS — Resolve, advance, harm, wounds/fatigue
+   ============================================================= */
+
+/* Resolve section */
+.resolve {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) minmax(0, 1fr) 38px;
+  gap: 5px;
+  align-items: stretch;
+  min-height: 210px;
+  overflow: visible;
+}
+
+.resolve h2 { display: grid; height: 100%; min-height: 188px; place-items: center; padding: 8px 0; color: #fff8ee; background: var(--red); writing-mode: vertical-rl; }
+.resolve h2:first-child { transform: rotate(180deg); }
+
+.advance-track {
+  --advance-track-size: min(clamp(96px, 9.5vw, 124px), 100%);
+  --advance-token-size: clamp(64px, 6.2vw, 82px);
+  position: relative;
+  width: var(--advance-track-size);
+  height: calc(var(--advance-token-size) * 2.03);
+  align-self: center;
+  justify-self: center;
+}
+
+.advance-track button {
+  position: absolute;
+  width: var(--advance-token-size);
+  min-height: var(--advance-token-size);
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  box-shadow: 0 6px 10px rgba(31,23,18,0.34);
+  filter: grayscale(1) contrast(1.15) brightness(0.96);
+  transition: filter 120ms ease, transform 120ms ease;
+  background: url("../assets/resolve-token.png") center / contain no-repeat;
+}
+
+.advance-track button:hover { transform: translateY(-2px); }
+.advance-track button.active { filter: none; }
+
+.advance-track button:nth-child(1) { top: 0;   left: 8.75%;  z-index: 1; }
+.advance-track button:nth-child(2) { top: 27%; left: 31.25%; z-index: 2; }
+.advance-track button:nth-child(3) { top: 54%; left: 8.75%;  z-index: 3; }
+
+/* Active advances can't be clicked again */
+.advance-track button.active { cursor: default; }
+
+/* Rank widget replacing old resolve-track */
+.rank-in-resolve {
+  position: relative;
+  width: min(clamp(104px, 10vw, 132px), 100%);
+  min-height: 176px;
+  height: auto;
+  align-self: center;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 6px 8px;
+}
+
+.resolve-value-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.resolve-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #3d2b1a;
+}
+
+.resolve-value {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+
+.bravery-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 5px rgba(212,175,55,0.55));
+}
+
+.rank-in-resolve .rank-name-display {
+  width: min(clamp(104px, 9.5vw, 122px), 100%);
+  min-height: 38px;
+  font-size: 0.78rem;
+  letter-spacing: 3px;
+}
+
+/* Rank colors */
+.rank-name-display.rank-новичок    { border-color: #4caf50; background: rgba(20,60,20,0.88); color: #a8f0a8; text-shadow: 0 0 8px rgba(76,175,80,0.8); box-shadow: 0 0 10px rgba(76,175,80,0.3), inset 0 0 8px rgba(0,0,0,0.3); }
+.rank-name-display.rank-закалённый { border-color: #2196f3; background: rgba(10,35,70,0.88); color: #a8d4ff; text-shadow: 0 0 8px rgba(33,150,243,0.8); box-shadow: 0 0 10px rgba(33,150,243,0.3), inset 0 0 8px rgba(0,0,0,0.3); }
+.rank-name-display.rank-ветеран    { border-color: #9c27b0; background: rgba(40,10,55,0.88); color: #dda8f0; text-shadow: 0 0 8px rgba(156,39,176,0.8); box-shadow: 0 0 10px rgba(156,39,176,0.3), inset 0 0 8px rgba(0,0,0,0.3); }
+.rank-name-display.rank-герой      { border-color: #8d6e63; background: rgba(45,25,15,0.88); color: #d4b8ae; text-shadow: 0 0 8px rgba(141,110,99,0.7); box-shadow: 0 0 10px rgba(141,110,99,0.25), inset 0 0 8px rgba(0,0,0,0.3); }
+.rank-name-display.rank-легенда    { border-color: #ffd700; background: rgba(55,40,0,0.88); color: #ffe57a; text-shadow: 0 0 10px rgba(255,215,0,1); box-shadow: 0 0 14px rgba(255,215,0,0.5), inset 0 0 8px rgba(0,0,0,0.3); }
+
+.rank-in-resolve .rank-up-btn {
+  width: min(clamp(104px, 9.5vw, 122px), 100%);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  transition: transform 120ms ease;
+  align-self: center;
+  overflow: visible;
+  display: block;
+  cursor: pointer;
+}
+
+.rank-in-resolve .rank-up-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.rank-in-resolve .rank-up-btn:hover { transform: translateY(-2px); }
+.rank-in-resolve .rank-up-btn:focus-visible { outline: none; }
+
+/* Harm / wounds */
+.right-rail { display: flex; justify-content: flex-end; position: relative; z-index: 5; width: 90px; overflow: visible; pointer-events: auto; }
+
+.harm { position: relative; flex: 0 0 160px; width: 160px; align-self: stretch; padding: 0; overflow: hidden; border: 0; background: transparent; box-shadow: none; }
+
+.harm::before { content: ""; position: absolute; inset: 0; z-index: 2; background: url("../assets/wounds.png") center / auto 100% no-repeat; pointer-events: none; }
+
+.harm h2 { display: none; }
+
+.round-track { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+.round-track button {
+  position: absolute;
+  left: 52%;
+  width: 34px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  color: var(--red);
+  background: var(--paper);
+  box-shadow: none;
+  font-weight: 900;
+  text-shadow: 0 1px 1px rgba(255,248,238,0.82);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.round-track button.active { color: #fff8ee; background: var(--red); text-shadow: 0 1px 2px rgba(31,23,18,0.8); }
+
+.round-track[data-track="wounds"] button:nth-child(1) { top: 8.2%; }
+.round-track[data-track="wounds"] button:nth-child(2) { top: 18.8%; }
+.round-track[data-track="wounds"] button:nth-child(3) { top: 29.5%; }
+
+.round-track[data-track="fatigue"] button:nth-child(1) { top: 71.4%; width: 64px; min-height: 64px; }
+.round-track[data-track="fatigue"] button:nth-child(2) { top: 86.1%; width: 64px; min-height: 64px; }
+.round-track[data-track="fatigue"] button:nth-child(3) { top: 51.8%; width: 42px; min-height: 28px; border-radius: 3px; background: transparent; }
+.round-track[data-track="fatigue"] button:nth-child(3).active { background: var(--red); }

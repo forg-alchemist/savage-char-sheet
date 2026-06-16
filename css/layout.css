@@ -1,0 +1,201 @@
+/* =============================================================
+   LAYOUT — Sheet structure, sections, responsive, print
+   ============================================================= */
+.sheet {
+  width: var(--sheet-design-width);
+  max-width: none;
+  margin: 0 0 0 var(--sheet-margin-left);
+  padding: 14px;
+  zoom: var(--sheet-scale);
+  transition: margin-left 0.28s ease;
+}
+
+.paper {
+  border: 1px solid rgba(52, 38, 22, 0.24);
+  border-radius: 4px;
+  background: linear-gradient(rgba(255,255,255,0.10), rgba(255,255,255,0.0)), var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.top-sheet {
+  --top-panel-height: 264px;
+  display: grid;
+  grid-template-columns:
+    clamp(380px, 29.5vw, 400px)
+    minmax(300px, 1fr)
+    clamp(320px, 29vw, 390px);
+  gap: 6px;
+  align-items: start;
+}
+
+.top-sheet > .paper {
+  height: var(--top-panel-height);
+  min-height: 0;
+}
+
+/* Shared section padding */
+.indicators, .identity, .resolve, .harm, .powers,
+.powers-row, .table-panel, .choice-panel, .footer { padding: 10px; }
+
+.main-page {
+  position: relative;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 90px;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.notes-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.tables-row { display: grid; grid-template-columns: 1fr;     gap: 10px; margin-top: 10px; }
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+[data-output="saveState"] { color: var(--muted); font-weight: 900; }
+
+.footer-clear-btn { min-width: 210px; }
+
+.footer-version {
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid rgba(169,20,15,0.32);
+  border-radius: 3px;
+  color: var(--red-dark);
+  background: rgba(212,175,55,0.16);
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+/* ── Print ── */
+@page { size: landscape; margin: 7mm 10mm; }
+
+@media print {
+  .no-print { display: none !important; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body  { background: #fff; }
+
+  /* Print the screen layout proportionally instead of rebuilding a narrower header */
+  .sheet {
+    width: var(--sheet-design-width) !important;
+    max-width: none !important;
+    padding: 14px !important;
+    margin: 0 !important;
+    zoom: 0.765 !important;
+  }
+
+  .top-sheet {
+    --top-panel-height: 264px !important;
+    grid-template-columns: 400px minmax(0, 1fr) 390px !important;
+    grid-template-rows: auto !important;
+    gap: 6px !important;
+    align-items: start !important;
+  }
+  .top-sheet > .paper {
+    height: var(--top-panel-height) !important;
+    overflow: hidden !important;
+  }
+  .main-page   { grid-template-columns: 180px minmax(0, 1fr) 90px !important; grid-template-rows: auto !important; }
+  .tables-row  { grid-template-columns: 1fr 1fr !important; }
+
+  .trait-columns  { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .trait-line, .trait-row { grid-template-columns: 148px minmax(0, 1fr) !important; }
+  .attribute-line { grid-template-columns: 148px minmax(0, 1fr) auto !important; }
+
+  .indicators      { grid-template-columns: minmax(0, 1fr) 178px !important; }
+  .identity-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto minmax(0, 1fr) !important;
+  }
+  .gear-row        { grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) 68px 60px !important; }
+  .gear-header     { grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) 68px 60px !important; }
+  .money-line      { grid-template-columns: 420px !important; }
+
+  .right-rail { width: 90px !important; overflow: visible !important; position: relative !important; }
+  .harm       { flex: 0 0 160px !important; width: 160px !important; }
+
+  /* Large containers CAN break across pages */
+  .paper { box-shadow: none; break-inside: auto; }
+
+  /* Fix gradient-text rendering as stripes on Стойкость / Защита tokens */
+  .stat-badge-val--dur,
+  .stat-badge-val--prot {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #a07820 !important;
+    color: #a07820 !important;
+  }
+
+  /* Resolve: kill vw-based sizing + vertical-h2 collapse that drops the column in print */
+  .resolve {
+    min-height: 210px !important;
+    grid-template-columns: 38px minmax(0, 1fr) minmax(0, 1fr) 38px !important;
+    gap: 5px !important;
+    align-items: stretch !important;
+    overflow: visible !important;
+  }
+  .resolve h2 {
+    min-height: 188px !important;
+    height: 100% !important;
+    align-self: stretch !important;
+    padding: 8px 0 !important;
+    font-size: 1.05rem !important;
+  }
+  .rank-in-resolve {
+    width: min(132px, 100%) !important;
+    min-height: 176px !important;
+  }
+  .rank-in-resolve .rank-name-display {
+    width: min(122px, 100%) !important;
+  }
+  .advance-track {
+    --advance-track-size: 124px !important;
+    --advance-token-size: 82px !important;
+  }
+
+  /* Powers row: flatten grid so browser can break it across pages */
+  .powers-row {
+    display: block !important;
+    break-inside: auto !important;
+  }
+  .powers-row h2 {
+    writing-mode: horizontal-tb !important;
+    transform: none !important;
+    margin: 0 0 6px 0 !important;
+    padding: 4px 8px !important;
+    display: block !important;
+  }
+  .power-points {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+  .power-picker { display: block !important; }
+
+  /* Small items must NOT be split in half */
+  .choice-card,
+  .weapon-row-data,
+  .armor-row-data,
+  .weapon-mc-warning,
+  .power-ext,
+  .pdet-card { break-inside: avoid; }
+
+  /* Section headers stay with first item below them */
+  .choice-panel > h3,
+  .panel-label,
+  .weapon-row-header,
+  .armor-row-header { break-after: avoid; }
+
+  .footer, .ghost, [data-entry-action="remove"], .choice-controls,
+  #picker-modal, #deal-modal { display: none !important; }
+}

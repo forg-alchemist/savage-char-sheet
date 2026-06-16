@@ -1,0 +1,1079 @@
+/* =============================================================
+   CHOICES — Choice panels, cards, toast, gear & tables
+   ============================================================= */
+.choice-panel    { min-height: 0; }
+.panel-title-row { display: flex; align-items: center; gap: 8px; }
+.panel-head      { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+
+.hindrance-points {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(200,180,132,0.2);
+  padding: 1px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.hindrance-points.full { color: var(--red); background: rgba(169,20,15,0.1); border-color: rgba(169,20,15,0.3); }
+
+.choice-controls { margin-top: 8px; }
+
+.choice-controls button {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--red);
+  color: #fff8ee;
+  border: 0;
+  border-radius: 3px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.choice-controls button:hover { background: var(--red-dark); }
+
+.choice-list { display: grid; gap: 6px; max-height: none; margin-top: 8px; overflow: visible; }
+
+.choice-card {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding: 7px 32px 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper-bg);
+}
+
+.choice-card strong { color: var(--red); font-size: 0.92rem; }
+.choice-card span   { color: var(--muted); font-size: 0.72rem; font-weight: 900; }
+
+.choice-card .degree-badge,
+.choice-card .edge-rank-badge { justify-self: start; }
+
+.choice-card .hindrance-name-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.choice-card .power-ps-badge {
+  color: var(--blue) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  margin-top: 3px;
+  justify-self: start;
+}
+
+.choice-card .picker-item-stat {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: normal;
+  margin-top: 1px;
+}
+
+.choice-card p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.choice-card button { position: absolute; top: 6px; right: 6px; width: 24px; min-height: 24px; padding: 0; }
+
+.locked-btn { opacity: 0.6; cursor: not-allowed; background: var(--muted) !important; color: #fff !important; }
+
+/* Toast */
+.toast-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  z-index: 9999;
+  max-width: min(440px, 86vw);
+  padding: 13px 26px;
+  background:
+    linear-gradient(rgba(255,255,255,0.04), rgba(0,0,0,0.18)),
+    linear-gradient(180deg, #2a1411 0%, #190c0a 100%);
+  color: #f3e7cf;
+  border: 1px solid rgba(212,175,55,0.45);
+  border-left: 4px solid var(--red);
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.015em;
+  line-height: 1.4;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+  opacity: 0;
+  transition: opacity 220ms ease, transform 220ms ease;
+  pointer-events: none;
+}
+
+.toast-notification.toast-show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+.toast-zone {
+  color: #f0c850;
+  font-weight: 900;
+  text-shadow: 0 0 8px rgba(240,200,80,0.45), 0 1px 2px rgba(0,0,0,0.7);
+}
+
+/* ── Tables & gear ── */
+.ghost { width: 32px; padding: 0; border-color: var(--line); color: var(--red); background: #fff8ee; }
+
+.weapon-list { margin-top: 8px; }
+
+.weapon-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) 90px 80px 35px 55px 80px 45px 60px 40px minmax(60px, 1fr) 28px;
+  gap: 0 8px;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+}
+
+.weapon-row-header { border-bottom: 2px solid var(--line); background: rgba(200,180,132,0.12); border-radius: 3px 3px 0 0; }
+.weapon-row-header span { color: var(--muted); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.weapon-row-data { border-bottom: 1px solid rgba(74,52,28,0.30); background: var(--paper-bg); }
+.weapon-row-data:last-child { border-bottom: 0; }
+.weapon-row-data:hover { background: linear-gradient(rgba(169,20,15,0.04), rgba(169,20,15,0.04)), var(--paper-bg); }
+
+.weapon-cell-name        { font-weight: 700; color: var(--ink); }
+.weapon-row-data button  { width: 22px; min-height: 22px; padding: 0; font-size: 0.85rem; }
+
+.armor-list { margin-top: 8px; }
+
+.armor-row {
+  display: grid;
+  grid-template-columns: minmax(160px, max-content) 48px 64px 56px 56px 1fr auto 28px;
+  gap: 0 8px;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+}
+
+.armor-row-header { border-bottom: 2px solid var(--line); background: rgba(200,180,132,0.12); border-radius: 3px 3px 0 0; }
+.armor-row-header span { color: var(--muted); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+.armor-row-data { border-bottom: 1px solid rgba(74,52,28,0.30); background: var(--paper-bg); }
+.armor-row-data:last-child { border-bottom: 0; }
+.armor-row-data:hover { background: linear-gradient(rgba(169,20,15,0.04), rgba(169,20,15,0.04)), var(--paper-bg); }
+.armor-row-data--worn { background: linear-gradient(rgba(56,107,143,0.14), rgba(56,107,143,0.14)), var(--paper-bg); }
+.armor-row-data--worn:hover { background: linear-gradient(rgba(56,107,143,0.22), rgba(56,107,143,0.22)), var(--paper-bg); }
+.armor-cell-name { font-weight: 700; color: var(--ink); }
+
+.armor-remove-btn { width: 22px; min-height: 22px; padding: 0; font-size: 0.85rem; }
+
+.armor-equip-btn {
+  min-height: 24px;
+  padding: 2px 12px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 4px;
+  border: 1px solid var(--blue);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.armor-equip-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.armor-equip-btn--on {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.armor-equip-btn--on:hover { background: transparent; color: var(--blue); }
+
+.armor-equip-locked {
+  justify-self: end;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 12px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 4px;
+  border: 1px solid var(--red);
+  background: rgba(169,20,15,0.06);
+  color: var(--red);
+}
+
+.weapon-mc-warning {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: rgba(169, 20, 15, 0.06);
+  border: 2px solid var(--red);
+  padding: 1px 10px 2px;
+  border-radius: 4px;
+  margin: 1px 0 3px 0;
+  white-space: nowrap;
+}
+
+.gear-table   { display: grid; gap: 5px; }
+.table-row    { display: grid; gap: 5px; }
+.table-row button { padding: 0; }
+.gear-row     { grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) 68px 60px 32px; }
+.gear-header  {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) 68px 60px 32px;
+  gap: 5px;
+  font-size: 0.72em;
+  text-transform: uppercase;
+  color: #6f3f18;
+  font-weight: 900;
+  padding: 0 2px;
+  margin-top: 4px;
+}
+
+.gear-row input::placeholder {
+  color: rgba(70, 38, 15, 0.5);
+  opacity: 1;
+}
+
+.gear-row input {
+  color: rgba(31, 23, 18, 0.72);
+  font-weight: 700;
+}
+
+/* ── Archetype panels (ЛОА, БОЖЕСТВЕННЫЕ ВМЕШАТЕЛЬСТВА) ── */
+.archetype-panel {
+  padding: 0 !important;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.archetype-panel-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 0.15s;
+}
+.archetype-panel-btn:hover {
+  filter: brightness(1.15);
+}
+
+.archetype-panel-body {
+  padding: 12px;
+}
+
+/* ── ЛОА — карточки выбора ── */
+.loa-cards-body { padding: 12px; }
+
+.loa-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.loa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255,252,244,0.9);
+}
+
+.loa-card--petro {
+  border-color: rgba(120,20,20,0.3);
+  background: rgba(255,248,244,0.9);
+}
+
+.loa-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.loa-card-name {
+  font-weight: 900;
+  font-size: 0.92rem;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+.loa-type-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(58,92,26,0.15);
+  color: #2a4012;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.loa-type--petro {
+  background: rgba(120,20,20,0.12);
+  color: #6b1010;
+}
+
+.loa-card-img {
+  height: 120px;
+  background: rgba(200,180,132,0.18);
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-style: italic;
+}
+
+.loa-card-img::after { content: "арт"; }
+
+.loa-card-desc {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.loa-section-label {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.loa-card-ritual {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* Таблица фишек */
+.loa-chip-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+
+.loa-chip-table td {
+  padding: 4px 7px;
+  border: 1px solid rgba(0,0,0,0.10);
+  vertical-align: top;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.loa-chip {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 62px;
+  border-radius: 2px;
+}
+
+.loa-chip--white { background: #e6e0d0; color: #333; }
+.loa-chip--red   { background: #7c1a1a; color: #fff8ee; }
+.loa-chip--blue  { background: #183080; color: #fff8ee; }
+
+/* Кнопка выбора */
+.loa-select-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #3a5c1a;
+  color: #fff8ee;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.loa-select-btn:hover { filter: brightness(1.2); }
+
+/* Вводный текст над кнопкой ЛОА */
+.loa-intro-text {
+  margin: 0;
+  padding: 14px 18px 10px;
+  font-size: 0.8rem;
+  line-height: 1.72;
+  color: var(--ink);
+  text-align: justify;
+  background:
+    linear-gradient(to bottom, rgba(58,92,26,0.07) 0%, rgba(58,92,26,0.02) 100%);
+  border-bottom: 1px solid rgba(58,92,26,0.18);
+  position: relative;
+}
+
+.loa-intro-text::before {
+  content: "✦  ☽  ✦";
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  color: rgba(58,92,26,0.5);
+  letter-spacing: 0.25em;
+  margin-bottom: 8px;
+}
+
+.loa-intro-text em {
+  display: block;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(58,92,26,0.2);
+  font-style: italic;
+  color: #3a5c1a;
+  font-size: 0.79rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Чудотворец — Божественные вмешательства ── */
+.bv-intro-text {
+  margin: 0;
+  padding: 14px 18px 10px;
+  font-size: 0.8rem;
+  line-height: 1.72;
+  color: var(--ink);
+  text-align: justify;
+  background: rgba(117,73,24,0.13);
+  border: 1px solid rgba(122,78,13,0.22);
+  border-radius: 3px;
+  position: relative;
+}
+
+.bv-intro-text::before {
+  content: "✦  ✝  ✦";
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  color: rgba(202,138,4,0.5);
+  letter-spacing: 0.25em;
+  margin-bottom: 8px;
+}
+
+.bv-intro-text em {
+  display: block;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border: 1px solid rgba(212,175,55,0.42);
+  border-radius: 3px;
+  font-style: italic;
+  color: #ffe57a;
+  font-size: 0.79rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.5;
+  background: linear-gradient(160deg, rgba(28,18,10,0.96) 0%, rgba(18,11,5,0.98) 100%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.65), 0 0 7px rgba(212,175,55,0.28);
+}
+
+/* ── Чудотворец — модал: список вмешательств ── */
+.bv-modal-card {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  align-items: stretch;
+  border: 1px solid rgba(122,78,13,0.24);
+  border-radius: 4px;
+  background: rgba(117,73,24,0.12);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.bv-modal-card:last-child { margin-bottom: 0; }
+
+.bv-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.bv-modal-card:last-child .bv-card-main { padding-bottom: 14px; }
+
+.bv-modal-card-name {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #7a5200;
+  text-transform: uppercase;
+}
+
+.bv-stats-block {
+  width: fit-content;
+  min-width: 340px;
+}
+
+.bv-stats-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(122,78,13,0.28);
+  border-radius: 4px;
+  background: rgba(255,248,238,0.12);
+  overflow: hidden;
+}
+
+.bv-stat-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: baseline;
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(122,78,13,0.14);
+  gap: 0 10px;
+}
+
+.bv-stat-row:last-child { border-bottom: none; }
+
+.bv-stat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(180,83,9,0.7);
+}
+
+.bv-stat-value {
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.bv-stat--modifier {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #b45309;
+}
+
+.bv-stat--manifestations {
+  font-style: italic;
+  font-size: 0.78rem;
+}
+
+.bv-card-desc {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.75;
+  color: var(--ink);
+  text-align: justify;
+}
+
+.bv-variants-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(122,78,13,0.28);
+  border-radius: 4px;
+  background: rgba(255,248,238,0.12);
+  overflow: hidden;
+}
+
+.bv-variant-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 0 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(122,78,13,0.14);
+  align-items: baseline;
+}
+
+.bv-variant-row:last-child { border-bottom: none; }
+
+.bv-variant-name {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #7a5200;
+  letter-spacing: 0.03em;
+}
+
+.bv-variant-text {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.bv-toggle-btn {
+  display: grid;
+  place-items: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff8ee;
+  background: linear-gradient(to left, #e8a010, #ca8a04);
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: filter 0.15s;
+  line-height: 1;
+  padding: 0 6px;
+}
+
+.bv-toggle-btn:hover { filter: brightness(1.12); }
+
+.bv-toggle-btn--remove {
+  background: linear-gradient(to left, #888, #666);
+}
+
+/* ── Чудотворец — выбранные вмешательства в панели ── */
+.bv-selected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(122,78,13,0.28);
+  background: rgba(117,73,24,0.08);
+  margin-bottom: 0;
+}
+
+.bv-selected-card {
+  position: relative;
+  padding: 10px 40px 12px 14px;
+  border: 1px solid rgba(122,78,13,0.24);
+  border-radius: 4px;
+  background: rgba(117,73,24,0.13);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bv-selected-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.bv-selected-remove:hover { opacity: 1; }
+
+.bv-selected-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.bv-selected-name {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #7a5200;
+  text-transform: uppercase;
+}
+
+.bv-selected-mod {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #b45309;
+}
+
+.bv-selected-meta {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.bv-selected-desc {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.65;
+  color: var(--ink);
+  text-align: justify;
+}
+
+/* ── Чудотворец — блок исхода молитвы ── */
+.bv-outcome-block {
+  margin: 10px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(122,78,13,0.3);
+  border-radius: 4px;
+  background: rgba(117,73,24,0.13);
+  overflow: hidden;
+}
+
+.bv-outcome-title {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #7a5200;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 7px 12px;
+  background: rgba(117,73,24,0.2);
+  border-bottom: 1px solid rgba(122,78,13,0.3);
+}
+
+.bv-outcome-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0 10px;
+  padding: 7px 12px;
+  border-top: 1px solid rgba(122,78,13,0.14);
+  align-items: baseline;
+}
+
+.bv-outcome-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.bv-outcome-text {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.bv-outcome--success .bv-outcome-label { color: #15803d; }
+.bv-outcome--fail    .bv-outcome-label { color: #b45309; }
+.bv-outcome--snake   .bv-outcome-label { color: #b91c1c; }
+
+/* ── ЛОА — выбранный лоа (compact view) ── */
+.loa-panel--selected { padding: 0 !important; }
+
+.loa-selected-layout {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 38px;
+  align-items: stretch;
+  background: linear-gradient(180deg, rgba(96,36,18,0.13), rgba(70,24,12,0.08)), var(--paper-bg);
+}
+
+.loa-selected-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.loa-selected-art--placeholder {
+  background: rgba(58,92,26,0.1);
+}
+
+.loa-selected-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+}
+
+.loa-selected-content .loa-card-name {
+  color: #1b130e;
+}
+
+.loa-selected-content .loa-card-desc {
+  font-size: 0.74rem;
+}
+
+.loa-selected-content .loa-ritual-box--compact {
+  margin: 4px 0 10px;
+  background: rgba(117,61,24,0.16);
+  border-color: rgba(122,13,9,0.28);
+  border-left-color: rgba(122,13,9,0.72);
+}
+
+.loa-selected-content .loa-ritual-label,
+.loa-selected-content .loa-chips-label {
+  color: #7a0d09;
+}
+
+.loa-selected-content .loa-chips-label {
+  border-bottom-color: rgba(122,13,9,0.28);
+}
+
+.loa-selected-content .loa-chip-token {
+  width: 40px;
+  height: 40px;
+}
+.loa-selected-content .loa-chip-token-label { font-size: 0.34rem; }
+.loa-selected-content .loa-chip-row {
+  padding: 7px 9px;
+  border: 1px solid rgba(122,13,9,0.22);
+  border-radius: 3px;
+  background: rgba(117,61,24,0.13);
+}
+.loa-selected-content .loa-chip-row-text {
+  padding-top: 6px;
+  color: #1b130e;
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+.loa-selected-content .loa-chip-rows { gap: 7px; margin-bottom: 8px; }
+
+.loa-sidebar {
+  display: grid;
+  place-items: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff8ee;
+  line-height: 1;
+}
+
+/* ── ЛОА — модал ── */
+
+/* Two-column layout */
+.loa-modal-layout {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 0 20px;
+  align-items: start;
+}
+
+.loa-modal-art-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loa-modal-art {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid rgba(58,92,26,0.2);
+  box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+  display: block;
+}
+
+.loa-art-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: rgba(58,92,26,0.07);
+  border: 1px dashed rgba(58,92,26,0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(58,92,26,0.3);
+  font-size: 0.7rem;
+  font-style: italic;
+}
+.loa-art-placeholder::after { content: "арт"; }
+
+.loa-modal-content-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Семейство — плашка в хедере модала (абсолют, левый верх) */
+.loa-header-family {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  padding: 9px 18px 10px;
+  border-radius: 3px;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.loa-header-family--rada {
+  background: rgba(40,95,25,0.13);
+  color: #244e14;
+  border: 1px solid rgba(40,95,25,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+.loa-header-family--petro {
+  background: rgba(120,15,15,0.11);
+  color: #6a0c0c;
+  border: 1px solid rgba(120,15,15,0.32);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+/* Описание */
+.loa-modal-p {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: var(--ink);
+  text-align: justify;
+}
+
+/* Ритуал — выделенный блок */
+.loa-ritual-box {
+  margin: 2px 0 12px;
+  padding: 9px 13px 10px;
+  background: rgba(160,120,20,0.08);
+  border: 1px solid rgba(160,120,20,0.28);
+  border-left: 4px solid rgba(160,110,15,0.6);
+  border-radius: 0 3px 3px 0;
+}
+
+.loa-ritual-label {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a5a08;
+  margin-bottom: 5px;
+}
+
+.loa-ritual-text {
+  margin: 0;
+  font-size: 0.81rem;
+  line-height: 1.62;
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* Фишки */
+.loa-chips-label {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #3a5c1a;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(58,92,26,0.22);
+}
+
+.loa-chip-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.loa-chip-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Покерная фишка */
+.loa-chip-token {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loa-chip-token--white {
+  background: #ede0b0;
+  border: 3px solid #a88830;
+  box-shadow:
+    inset 0 0 0 5px rgba(255,248,220,0.7),
+    inset 0 0 0 8px #b89438,
+    0 3px 7px rgba(0,0,0,0.35);
+}
+.loa-chip-token--white .loa-chip-token-label { color: #3e2c00; }
+
+.loa-chip-token--red {
+  background: #a81010;
+  border: 3px solid #680808;
+  box-shadow:
+    inset 0 0 0 5px rgba(255,180,180,0.22),
+    inset 0 0 0 8px rgba(80,0,0,0.35),
+    0 3px 7px rgba(0,0,0,0.45);
+}
+.loa-chip-token--red .loa-chip-token-label { color: #ffd8d0; }
+
+.loa-chip-token--blue {
+  background: #101898;
+  border: 3px solid #060c58;
+  box-shadow:
+    inset 0 0 0 5px rgba(160,180,255,0.18),
+    inset 0 0 0 8px rgba(0,0,60,0.3),
+    0 3px 7px rgba(0,0,0,0.5);
+}
+.loa-chip-token--blue .loa-chip-token-label { color: #c8d4ff; }
+
+.loa-chip-token-label {
+  font-size: 0.38rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.loa-chip-row-text {
+  margin: 0;
+  padding-top: 14px;
+  font-size: 0.81rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* Кнопка выбора */
+.loa-modal-select-btn {
+  display: block;
+  width: 100%;
+  padding: 13px 16px;
+  background: linear-gradient(to bottom, #4c7820, #2e5010);
+  color: #fff8ee;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.loa-modal-select-btn:hover { filter: brightness(1.15); }
+.loa-modal-select-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+
+.loa-already-selected {
+  text-align: center;
+  padding: 12px;
+  font-size: 0.8rem;
+  color: #3a5c1a;
+  font-style: italic;
+  opacity: 0.65;
+}

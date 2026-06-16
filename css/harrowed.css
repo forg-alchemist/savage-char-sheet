@@ -1,0 +1,126 @@
+/* =============================================================
+   HARROWED (Меченный) MODE
+   Every visual change vs the normal sheet lives here. Toggled by
+   body.harrowed (see js/features/harrowed.js).
+   ============================================================= */
+
+/* ── Marshal-only toggle button (mirror of the instruction button, right edge) ── */
+.harrowed-btn {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 72px;
+  padding: 16px 8px;
+  background: #2b2b2f;
+  color: #d6d8dc;
+  border: 1px solid #4a4a52;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  /* Above the picker modal (200) so the Marshal can mark/unmark while it's open
+     and watch the blocked hindrances appear/disappear in real time */
+  z-index: 250;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  zoom: var(--sheet-scale);
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.harrowed-btn[hidden] { display: none; }
+.harrowed-btn:hover   { background: #38383f; border-color: #6c6c76; }
+
+.harrowed-icon  { font-size: 2rem; line-height: 1; }
+.harrowed-label { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 0.14em; }
+
+.harrowed-btn--active {
+  background: #18181b;
+  color: #ecedf0;
+  border-color: #8b8b94;
+  box-shadow: 0 0 18px rgba(170,180,190,0.45), inset 0 0 12px rgba(0,0,0,0.6);
+}
+.harrowed-btn--active .harrowed-icon { text-shadow: 0 0 10px rgba(205,215,225,0.95); }
+
+/* ── The sheet turns to cold weathered-steel once the character is Marked ── */
+body.harrowed {
+  --paper: #c2c8ce;
+  --paper-bg: rgba(206, 213, 219, 0.94);
+  --ink: #14171a;
+  --muted: #525a63;
+  --line: #8a929b;
+  --bg: #292d33;
+}
+
+/* Richer cold-slate card surface — gradient gives the grey depth & sheen */
+body.harrowed .paper {
+  background:
+    linear-gradient(157deg,
+      rgba(255,255,255,0.24) 0%,
+      rgba(255,255,255,0.05) 40%,
+      rgba(36,44,56,0.12) 100%),
+    linear-gradient(180deg, #ccd2d8 0%, #aeb6bf 100%);
+  border-color: rgba(64,74,86,0.42);
+  box-shadow:
+    0 14px 30px rgba(8,12,18,0.42),
+    inset 0 1px 0 rgba(255,255,255,0.30),
+    inset 0 -10px 22px rgba(40,48,58,0.10);
+}
+
+/* The wounds/fatigue clock is a transparent PNG — keep it panel-less */
+body.harrowed .harm {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Cool the dark grid backdrop & swap the red glow for steel mist */
+body.harrowed {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    radial-gradient(circle at 15% 0%, rgba(120,140,160,0.18), transparent 34%),
+    var(--bg);
+  background-size: 34px 34px, 34px 34px, auto, auto;
+}
+
+/* Smooth the transition into / out of the Marked skin */
+.paper { transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease; }
+
+/* ── The card deal turns from gold to cold silver while Marked ── */
+#deal-modal.deal-harrowed {
+  --gold: #cfd5dc;
+  --gold-muted: #aab2bc;
+}
+/* Hard overrides for the few hardcoded-gold glows */
+#deal-modal.deal-harrowed .dcw.selected {
+  filter: drop-shadow(0 0 8px #cfd5dc) drop-shadow(0 0 18px rgba(190,202,214,0.55));
+}
+#deal-modal.deal-harrowed .dist-card:hover {
+  border-color: #cfd5dc;
+  box-shadow: 0 0 14px rgba(190,202,214,0.32);
+}
+#deal-modal.deal-harrowed .dist-card,
+#deal-modal.deal-harrowed .dcb,
+#deal-modal.deal-harrowed .dcf,
+#deal-modal.deal-harrowed .deal-pile-card { border-color: #aab2bc; }
+
+/* ── Harrowed-only hindrances: grey — minor pale, major saturated ── */
+/* Picker rows (override the amber/red degree tints) */
+.picker-item--harrowed.picker-item--minor       { background: rgba(150,158,168,0.16); }
+.picker-item--harrowed.picker-item--minor:hover { background: rgba(150,158,168,0.26); }
+.picker-item--harrowed.picker-item--major        { background: rgba(88,98,110,0.30); }
+.picker-item--harrowed.picker-item--major:hover  { background: rgba(88,98,110,0.40); }
+
+/* Degree badges */
+.degree-badge.minor.harrowed { background: rgba(150,158,168,0.20); color: #565d66; border: 1px solid rgba(120,130,142,0.42); }
+.degree-badge.major.harrowed { background: rgba(88,98,110,0.34);  color: #333b44; border: 1px solid rgba(78,88,100,0.55); }
+
+/* Selected cards on the sheet */
+.choice-card--harrowed-minor { background: rgba(150,158,168,0.14); border-color: rgba(120,130,142,0.42); }
+.choice-card--harrowed-major { background: rgba(88,98,110,0.24);  border-color: rgba(78,88,100,0.55); }

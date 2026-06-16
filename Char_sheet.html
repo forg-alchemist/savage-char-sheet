@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deadlands: Лист персонажа</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <button type="button" class="instruction-btn no-print" data-action="openInstruction">
+      <span class="instruction-icon">📖</span>
+      <span class="instruction-label">ИНСТРУКЦИЯ</span>
+    </button>
+
+    <button type="button" class="harrowed-btn no-print" id="harrowed-btn" hidden>
+      <span class="harrowed-icon">☠</span>
+      <span class="harrowed-label">МЕЧЕННЫЙ</span>
+    </button>
+
+    <main class="sheet">
+      <div class="marshal-banner" id="marshal-banner">
+        <span class="marshal-banner-skull">☠</span>
+        РЕЖИМ МАРШАЛА
+        <span class="marshal-banner-skull">☠</span>
+      </div>
+
+      <header class="top-sheet">
+        <section class="indicators paper">
+          <h2>Показатели</h2>
+          <div class="indicator-grid">
+            <div class="stat-badge" data-tooltip="Стойкость = Выносливость/2 + 2. Определяет, насколько сложно причинить вред персонажу.">
+              <div class="stat-badge-img">
+                <img src="assets/Durability+.png" alt="Стойкость" />
+                <output data-output="toughness" class="stat-badge-val stat-badge-val--dur">4</output>
+              </div>
+            </div>
+            <div class="stat-badge" data-tooltip="Защита = Драка/2 + 2. Задаёт сложность проверки для противника, атакующего в ближнем бою.">
+              <div class="stat-badge-img">
+                <img src="assets/Protection+.png" alt="Защита" />
+                <output data-output="parry" class="stat-badge-val stat-badge-val--prot">2</output>
+              </div>
+            </div>
+            <div class="stat-badge" data-tooltip="Шаг — базовое расстояние перемещения за действие.">
+              <div class="stat-badge-img">
+                <img src="assets/Boots.png" alt="Шаг" />
+                <output data-output="pace" class="stat-badge-val stat-badge-val--pace">3</output>
+              </div>
+            </div>
+            <div class="stat-badge" data-tooltip="Бег — дополнительный бросок при беге, прибавляется к Шагу.">
+              <div class="stat-badge-img">
+                <img src="assets/Run.png" alt="Бег" />
+                <output data-output="runDie" class="stat-badge-val stat-badge-val--run">d4</output>
+              </div>
+            </div>
+          </div>
+          <div class="armor-sector-board" aria-label="Броня по секторам">
+            <img src="assets/Armor.png" alt="" />
+            <output data-output="armorHead" class="armor-sector-value armor-sector-value--head">0</output>
+            <output data-output="armorTorso" class="armor-sector-value armor-sector-value--torso">0</output>
+            <output data-output="armorArms" class="armor-sector-value armor-sector-value--arms">0</output>
+            <output data-output="armorLegs" class="armor-sector-value armor-sector-value--legs">0</output>
+          </div>
+        </section>
+
+        <section class="identity paper">
+          <div class="identity-layout">
+            <label class="name-line id-full">
+              <span id="name-label">НЕ ОБНОВЛЯЛОСЬ МАРШАЛОМ</span>
+              <input data-bind="name" placeholder="Безымянный стрелок" autocomplete="off" />
+            </label>
+            <label>
+              <span>Архетип</span>
+              <output data-output="archetype">Стрелок</output>
+            </label>
+            <div class="dopochki-cell">
+              <button type="button" class="info-btn no-print">ИНФО</button>
+              <label class="dopochki-lbl">
+                <span>Доп. очки</span>
+                <output data-output="extraPoints">0</output>
+              </label>
+            </div>
+            <div class="skill-budget-cell">
+              <label><span>Навыки</span><output data-output="skillBudget">0 / 12</output></label>
+            </div>
+            <label class="cash-badge">
+              <span>Деньги</span>
+              <div class="money-fields">
+                <div class="money-wrap"><span class="currency-sign">$</span><input data-bind="money" placeholder="0" /></div>
+                <div class="money-wrap"><span class="currency-sign">¢</span><input data-bind="moneyCents" placeholder="0" /></div>
+              </div>
+            </label>
+            <div class="identity-actions id-full">
+              <div class="identity-btns-col">
+                <div class="deal-row">
+                  <button type="button" class="deal-button" data-action="dealCards">Сделать расклад</button>
+                  <span class="jr-status" data-output="jokerStatus"></span>
+                </div>
+                <button type="button" class="marshal-btn" data-action="marshalMode">★ РЕЖИМ МАРШАЛА</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="resolve paper">
+          <h2>Ранг</h2>
+          <div class="rank-in-resolve">
+            <button type="button" class="rank-up-btn" data-action="rankUp" id="rank-up-btn">
+              <img src="assets/lvlUp.png" alt="Повысить ранг" />
+            </button>
+            <div class="rank-name-display" data-output="rankDisplay">НОВИЧОК</div>
+            <div class="resolve-value-row">
+              <span class="resolve-label">Выдержка</span>
+              <span class="resolve-value" data-output="resolveValue">1</span>
+            </div>
+
+          </div>
+          <div class="advance-track" data-track="advance"></div>
+          <h2>Повышения</h2>
+        </section>
+      </header>
+
+      <section class="main-page">
+        <aside class="portrait-aside paper">
+          <label class="portrait-frame">
+            <span class="portrait-placeholder">Загрузить портрет</span>
+            <input type="file" accept="image/*" data-action="uploadArt" />
+          </label>
+        </aside>
+
+        <section class="trait-board paper">
+          <div class="trait-columns" data-trait-board></div>
+        </section>
+
+        <aside class="right-rail">
+          <section class="harm paper">
+            <h2>Ранения</h2>
+            <div class="round-track" data-track="wounds"></div>
+            <h2>Усталость</h2>
+            <div class="round-track" data-track="fatigue"></div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="notes-row">
+        <section class="choice-panel paper">
+          <div class="panel-title-row">
+            <h2>Изъяны</h2>
+            <span class="hindrance-points" data-output="hindrancePoints">0 / 4</span>
+          </div>
+          <div class="choice-controls">
+            <button type="button" data-action="openPicker" data-type="hindrances">+ Добавить</button>
+          </div>
+          <div class="choice-list" data-choice-list="hindrances"></div>
+        </section>
+        <section class="choice-panel paper">
+          <h2>Черты</h2>
+          <div class="choice-controls">
+            <button type="button" data-action="openPicker" data-type="edges">+ Добавить</button>
+          </div>
+          <div class="choice-list" data-choice-list="edges"></div>
+        </section>
+      </section>
+
+      <section class="powers-row paper">
+        <h2>Силы</h2>
+        <div class="power-points">
+          <label><span>ПС Макс.</span><output data-output="powerMax">0</output></label>
+          <label><span>ПС Текущ.</span><input data-bind="powerCurrent" type="number" min="0" /></label>
+          <label><span>Силы Макс.</span><output data-output="silyMax">0</output></label>
+          <label><span>Силы Текущ.</span><output data-output="silyCurrent">0</output></label>
+        </div>
+        <div class="power-picker">
+          <div class="choice-controls">
+            <button type="button" data-action="openPicker" data-type="powers">+ Добавить</button>
+          </div>
+          <div class="choice-list powers-list" data-choice-list="powers"></div>
+        </div>
+      </section>
+
+      <section class="paper archetype-panel" id="panel-loa" hidden>
+        <button type="button" class="archetype-panel-btn" id="btn-loa">ЛОА</button>
+        <div class="archetype-panel-body" id="body-loa" hidden></div>
+      </section>
+
+      <section class="paper archetype-panel" id="panel-bv" hidden>
+        <button type="button" class="archetype-panel-btn" id="btn-bv">БОЖЕСТВЕННЫЕ ВМЕШАТЕЛЬСТВА</button>
+        <div class="archetype-panel-body" id="body-bv" hidden></div>
+      </section>
+
+      <section class="tables-row">
+        <section class="paper table-panel">
+          <h2>Оружие</h2>
+          <div class="choice-controls">
+            <button type="button" data-action="openPicker" data-type="weapons">+ Добавить</button>
+          </div>
+          <div class="weapon-list" data-choice-list="weapons"></div>
+        </section>
+        <section class="paper table-panel">
+          <h2>Броня</h2>
+          <div class="choice-controls">
+            <button type="button" data-action="openPicker" data-type="armor">+ Добавить</button>
+          </div>
+          <div class="armor-list" data-choice-list="armor"></div>
+        </section>
+        <section class="paper table-panel horse-panel">
+          <button type="button" class="horse-token" data-action="toggleHorse" aria-label="Лошадь">
+            <img src="assets/Horse/Horse.png" alt="Лошадь" />
+            <span data-output="mountActionLabel">Купить лошадь</span>
+          </button>
+          <div class="horse-panel-body">
+            <div class="horse-main">
+              <div class="panel-head horse-panel-head">
+                <h2 data-output="mountTitle">Лошадь</h2>
+                <span class="horse-state" data-output="mountState">Нет лошади</span>
+              </div>
+              <p class="horse-lead" data-output="mountLead">Лошади быстры и могут переносить большие веса.</p>
+              <div class="horse-indicators" aria-label="Показатели лошади">
+                <button type="button" class="horse-indicator" data-mount-indicator="pace" data-tooltip="Шаг лошади.">
+                  <span>Шаг</span>
+                  <output data-output="mountPace">6</output>
+                </button>
+                <button type="button" class="horse-indicator" data-mount-indicator="runDie" data-tooltip="Кость бега лошади.">
+                  <span>Бег</span>
+                  <output data-output="mountRunDie">d6</output>
+                </button>
+                <button type="button" class="horse-indicator" data-mount-indicator="parry" data-tooltip="Защита лошади.">
+                  <span>Защита</span>
+                  <output data-output="mountParry">4</output>
+                </button>
+                <button type="button" class="horse-indicator" data-mount-indicator="toughness" data-tooltip="Стойкость лошади.">
+                  <span>Стойкость</span>
+                  <output data-output="mountToughness">8</output>
+                </button>
+              </div>
+              <table class="horse-stats-table">
+                <tbody>
+                  <tr>
+                    <th>Характеристики</th>
+                    <td data-output="mountTraits">Ловкость d8, Смекалка d4 (ж), Характер d6, Сила d12, Выносливость d8</td>
+                  </tr>
+                  <tr>
+                    <th>Навыки</th>
+                    <td data-output="mountSkills">Атлетика d8, Внимание d6, Драка d4</td>
+                  </tr>
+                  <tr>
+                    <th>Черты</th>
+                    <td data-output="mountEdges">Быстроногость</td>
+                  </tr>
+                  <tr>
+                    <th>Особенности</th>
+                    <td>
+                      <ul data-output="mountFeatures">
+                        <li><strong>Размер 2:</strong> обычная верховая лошадь весит около 500 кг.</li>
+                        <li><strong>Удар копытами:</strong> по целям спереди или позади; Сила+d4.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="mount-equipment">
+                <div class="mount-equipment-head">
+                  <h3>Снаряжение</h3>
+                  <button type="button" data-action="openMountEquipment">+</button>
+                </div>
+                <div class="mount-equipment-list" data-output="mountEquipmentList"></div>
+              </div>
+            </div>
+            <aside class="horse-side">
+              <div class="horse-load-grid">
+                <label class="load-meter-label">
+                  <span>Комфортная нагрузка</span>
+                  <output data-output="mountWeightTotal">0</output>
+                </label>
+              </div>
+              <div class="mount-card mount-card--side" data-output="mountStatus" hidden></div>
+            </aside>
+          </div>
+        </section>
+        <section class="paper table-panel">
+          <div class="panel-head">
+            <h2>Снаряжение</h2>
+            <button type="button" class="ghost" data-action="addGear">+</button>
+          </div>
+          <div class="money-line">
+            <label class="load-meter-label"><span>Комфортная нагрузка</span><output data-output="weightTotal">0</output></label>
+          </div>
+          <div class="gear-header">
+            <span>Предмет</span><span>Примечания</span><span>Цена</span><span>Вес</span><span></span>
+          </div>
+          <div class="gear-table" data-list="gear"></div>
+        </section>
+      </section>
+
+      <footer class="footer paper">
+        <button type="button" data-action="importChar">Импорт персонажа</button>
+        <button type="button" data-action="exportChar">Экспорт персонажа</button>
+        <button type="button" data-action="print">Печать PDF</button>
+        <button type="button" class="footer-clear-btn" data-action="clear">Очистить</button>
+        <span data-output="saveState">Сохранено</span>
+        <span class="footer-version" id="app-version"></span>
+      </footer>
+    </main>
+
+    <template id="trait-row-template">
+      <article class="trait-row">
+        <div class="dice-track" data-dice-track></div>
+        <input class="trait-name-input" />
+      </article>
+    </template>
+
+<template id="gear-template">
+      <article class="gear-row table-row">
+        <input data-field="name" placeholder="Предмет" />
+        <input data-field="notes" placeholder="Примечания" />
+        <input data-field="price" placeholder="Цена" />
+        <input data-field="weight" type="number" min="0" step="0.1" />
+        <button type="button" data-entry-action="remove">×</button>
+      </article>
+    </template>
+
+    <div id="picker-modal" hidden>
+      <div class="picker-backdrop"></div>
+      <div class="picker-dialog paper">
+        <div class="picker-header">
+          <h3 class="picker-title"></h3>
+          <span class="picker-cost-badge" id="picker-cost-badge" hidden></span>
+          <span class="picker-money-badge" id="picker-money-badge" hidden></span>
+          <button type="button" class="picker-close" data-action="closePicker">×</button>
+        </div>
+        <input type="text" class="picker-search" placeholder="Поиск..." autocomplete="off" />
+        <div id="picker-group-nav" class="picker-group-nav" hidden>
+          <button type="button" class="picker-nav-btn" id="picker-nav-prev">&#8592;</button>
+          <span class="picker-nav-label" id="picker-nav-label"></span>
+          <button type="button" class="picker-nav-btn" id="picker-nav-next">&#8594;</button>
+        </div>
+        <div class="picker-list"></div>
+        <div class="picker-footer" id="picker-footer" hidden>
+          <button type="button" class="picker-filter-btn" id="picker-filter-btn" hidden>ФИЛЬТР ВЫБОРА</button>
+          <button type="button" class="picker-finish-btn" data-action="finishHindrances">Закончить выбор</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="instruction-modal" hidden>
+      <div class="instr-backdrop"></div>
+      <div class="instr-dialog paper">
+        <div class="instr-header">
+          <span class="instr-title">Инструкция</span>
+          <button type="button" class="instr-close" data-action="closeInstruction">×</button>
+        </div>
+        <div class="instr-body"></div>
+        <div class="instr-nav">
+          <button type="button" class="instr-btn-prev" data-action="instrPrev" disabled>&#8592;</button>
+          <span class="instr-page-num">1 / 1</span>
+          <button type="button" class="instr-btn-next" data-action="instrNext" disabled>&#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="advance-modal" hidden>
+      <div class="adv-backdrop"></div>
+      <div class="adv-dialog">
+        <div class="adv-header">
+          <div class="adv-ornament">✦ &nbsp; ★ &nbsp; ✦</div>
+          <span class="adv-title">Получено повышение</span>
+          <div class="adv-ornament adv-ornament--sub">— &nbsp; ☆ &nbsp; —</div>
+        </div>
+        <p class="adv-subtitle">Выбери вариант развития</p>
+        <div class="adv-options">
+          <button type="button" class="adv-opt" data-choice="edge">
+            <div class="adv-opt-text">
+              <span class="adv-opt-name">Выбрать новую черту</span>
+            </div>
+          </button>
+          <button type="button" class="adv-opt" data-choice="skill1">
+            <div class="adv-opt-text">
+              <span class="adv-opt-name">Увеличить навык выше или равный характеристике на 1 ступень</span>
+            </div>
+          </button>
+          <button type="button" class="adv-opt" data-choice="skill2">
+            <div class="adv-opt-text">
+              <span class="adv-opt-name">Увеличить 2 навыка на 1 ступень, не выше связанных характеристик (в том числе взять новые на d4)</span>
+            </div>
+          </button>
+          <button type="button" class="adv-opt" data-choice="attribute">
+            <div class="adv-opt-text">
+              <span class="adv-opt-name">Повысить характеристику на 1 ступень</span>
+            </div>
+            <span class="adv-opt-badge">1 раз за ранг</span>
+          </button>
+          <button type="button" class="adv-opt" data-choice="hindrance">
+            <div class="adv-opt-text">
+              <span class="adv-opt-name">Уменьшить / Избавиться от изъяна</span>
+            </div>
+            <span class="adv-opt-badge">1 раз за ранг</span>
+          </button>
+        </div>
+        <div class="adv-actions">
+          <button type="button" class="adv-confirm-btn" data-action="advConfirm" disabled>Подтвердить выбор</button>
+          <button type="button" class="adv-back-btn" data-action="advCancel">↺ Вернуться</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="archetype-modal" hidden>
+      <div class="atype-backdrop"></div>
+      <div class="atype-dialog paper">
+        <span class="atype-corner atype-corner--tl"></span>
+        <span class="atype-corner atype-corner--tr"></span>
+        <span class="atype-corner atype-corner--bl"></span>
+        <span class="atype-corner atype-corner--br"></span>
+        <div class="atype-header">
+          <div class="atype-ornament">✦ &nbsp; ★ &nbsp; ✦</div>
+          <span class="atype-name"></span>
+          <span class="atype-subtitle"></span>
+          <button type="button" class="atype-close">×</button>
+        </div>
+        <div class="atype-body"></div>
+      </div>
+    </div>
+
+    <div id="loa-modal" hidden>
+      <div class="atype-backdrop" id="loa-backdrop"></div>
+      <div class="atype-dialog paper" id="loa-dialog" data-theme="voodoo">
+        <span class="atype-corner atype-corner--tl"></span>
+        <span class="atype-corner atype-corner--tr"></span>
+        <span class="atype-corner atype-corner--bl"></span>
+        <span class="atype-corner atype-corner--br"></span>
+        <div class="atype-header">
+          <div id="loa-header-family"></div>
+          <div class="atype-ornament">☽ &nbsp; ✧ &nbsp; ☾</div>
+          <span class="atype-name" id="loa-modal-name"></span>
+          <span class="atype-subtitle" id="loa-modal-type"></span>
+          <button type="button" class="atype-close" id="loa-modal-close">×</button>
+        </div>
+        <div class="atype-body" id="loa-modal-body"></div>
+      </div>
+    </div>
+
+    <div id="bv-modal" hidden>
+      <div class="atype-backdrop" id="bv-backdrop"></div>
+      <div class="atype-dialog paper" id="bv-dialog" data-theme="blessed">
+        <span class="atype-corner atype-corner--tl"></span>
+        <span class="atype-corner atype-corner--tr"></span>
+        <span class="atype-corner atype-corner--bl"></span>
+        <span class="atype-corner atype-corner--br"></span>
+        <div class="atype-header">
+          <div class="atype-ornament">✦ &nbsp; ✝ &nbsp; ✦</div>
+          <span class="atype-name">БОЖЕСТВЕННЫЕ ВМЕШАТЕЛЬСТВА</span>
+          <button type="button" class="atype-close" id="bv-modal-close">×</button>
+        </div>
+        <div class="atype-body" id="bv-modal-body"></div>
+      </div>
+    </div>
+
+    <div id="confirm-modal" hidden>
+      <div class="confirm-backdrop"></div>
+      <div class="confirm-dialog paper">
+        <div class="confirm-icon">&#9888;</div>
+        <h3 class="confirm-title">Внимание!</h3>
+        <p class="confirm-message"></p>
+        <div class="confirm-buttons">
+          <button type="button" class="confirm-yes-btn" id="confirm-yes">Да, подтвердить</button>
+          <button type="button" class="confirm-no-btn" id="confirm-no">Вернуться</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/catalogs/powers.js"></script>
+    <script src="js/catalogs/hindrances.js"></script>
+    <script src="js/catalogs/edges.js"></script>
+    <script src="js/catalogs/archetypeEdges.js"></script>
+    <script src="js/catalogs/weapons.js"></script>
+    <script src="js/catalogs/armor.js"></script>
+    <script src="js/catalogs/mount.js"></script>
+    <script src="js/catalogs/index.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/features/traits.js"></script>
+    <script src="js/features/tracks.js"></script>
+    <script src="js/picker/constants.js"></script>
+    <script src="js/catalogs/lookup.js"></script>
+    <script src="js/picker/helpers.js"></script>
+    <script src="js/picker/filter.js"></script>
+    <script src="js/picker/list.js"></script>
+    <script src="js/picker/choice.js"></script>
+    <script src="js/panels/spirit.js"></script>
+    <script src="js/picker/subpickers.js"></script>
+    <script src="js/picker/index.js"></script>
+    <script src="js/features/deal.js"></script>
+    <script src="js/features/marshal.js"></script>
+    <script src="js/features/harrowed.js"></script>
+    <script src="js/panels/loa.js"></script>
+    <script src="js/panels/divine.js"></script>
+    <script src="js/panels/archetype.js"></script>
+    <script src="js/features/mount.js"></script>
+    <script src="js/features/weaponAcquisition.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/modals/exportImport.js"></script>
+    <script src="js/features/advance.js"></script>
+    <script src="js/modals/archetypeInfo.js"></script>
+    <script src="js/modals/instruction.js"></script>
+  </body>
+</html>

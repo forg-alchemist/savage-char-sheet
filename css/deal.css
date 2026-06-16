@@ -1,0 +1,362 @@
+/* =============================================================
+   DEAL — Deal modal and distribution phase
+   ============================================================= */
+
+/* ── Modal overlay ── */
+#deal-modal {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+
+#deal-modal.deal-open { opacity: 1; }
+
+.deal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(10, 7, 5, 0.90);
+}
+
+/* ── Scene container ── */
+.deal-scene {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 20px;
+  padding: 36px 24px 28px;
+  width: 100%;
+  max-width: 975px;
+}
+
+/* ── Deal pile (stacked deck visual) ── */
+.deal-pile {
+  position: relative;
+  width: 110px; height: 150px;
+}
+
+.deal-pile-card {
+  position: absolute; inset: 0;
+  background: var(--card-dark);
+  border: 2px solid var(--gold-muted);
+  border-radius: 7px;
+}
+
+.deal-pile-card:nth-child(1) { transform: translate(-3px, -3px); }
+.deal-pile-card:nth-child(2) { transform: translate(-2px, -2px); }
+.deal-pile-card:nth-child(3) { transform: translate(-1px, -1px); }
+.deal-pile-card:nth-child(4) { transform: none; }
+
+.deal-pile-card:last-child::after {
+  content: "✦";
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; color: var(--gold-muted); opacity: 0.28;
+}
+
+/* ── Spread (fan of 7 cards) ── */
+.deal-spread {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+  min-height: 194px;
+  padding-bottom: 28px;
+}
+
+/* ── Card wrapper — 2D fan position + deal-in animation ── */
+.dcw {
+  width: 110px; height: 150px;
+  flex-shrink: 0;
+  perspective: 700px;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(-260px) scale(0.75);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   0.32s ease,
+              filter    0.2s ease;
+}
+
+.dcw.dealt {
+  opacity: 1;
+  transform: rotate(var(--rot));
+}
+
+.dcw.selectable                    { cursor: pointer; }
+.dcw.protected                     { opacity: 0.5; cursor: not-allowed; }
+.dcw.selected                      { filter: drop-shadow(0 0 8px var(--gold)) drop-shadow(0 0 18px rgba(212,175,55,0.55)); }
+.dcw.discarded                     { opacity: 0; transform: rotate(var(--rot)) translateY(80px) scale(0.5); pointer-events: none; }
+.dcw.drag-ghost                    { opacity: 0.3; }
+
+.dcw.selectable:not(.protected):hover {
+  transform: rotate(var(--rot)) translateY(-16px);
+  transition: transform 0.18s ease;
+}
+
+/* ── Card 3D flip inner ── */
+.dci {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dcw.flipped .dci { transform: rotateY(180deg); }
+
+/* ── Card faces ── */
+.dcb, .dcf {
+  position: absolute; inset: 0;
+  border-radius: 7px;
+  background: var(--card-dark);
+  border: 2px solid var(--gold-muted);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Card back decoration */
+.dcb::after {
+  content: "✦";
+  font-size: 1.7rem;
+  color: var(--gold-muted);
+  opacity: 0.22;
+}
+
+/* Card front — starts rotated 180° (hidden until flip) */
+.dcf {
+  transform: rotateY(180deg);
+  flex-direction: column;
+  padding: 6px;
+  position: absolute; inset: 0;
+}
+
+/* ── Playing-card content layout ── */
+.dcf        { position: absolute; }
+.dist-card  { position: relative; }
+
+.dc-corner {
+  position: absolute;
+  display: flex; flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  gap: 0;
+}
+
+.dc-tl { top: 5px; left: 6px; }
+.dc-br { bottom: 5px; right: 6px; transform: rotate(180deg); }
+
+.dc-corner b    { font-size: 0.98rem; font-weight: 900; }
+.dc-corner span { font-size: 0.75rem; line-height: 1; }
+
+.dc-center {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.dc-center span { font-size: 2.5rem; line-height: 1; }
+
+/* ── Suit colours ── */
+.suit-hearts   .dc-corner,
+.suit-hearts   .dc-center { color: var(--red); }
+
+.suit-diamonds .dc-corner,
+.suit-diamonds .dc-center { color: var(--red); }
+
+.suit-clubs    .dc-corner,
+.suit-clubs    .dc-center { color: #e8d9b8; }
+
+.suit-spades   .dc-corner,
+.suit-spades   .dc-center { color: #e8d9b8; }
+
+.suit-joker-red   .dc-corner,
+.suit-joker-red   .dc-center { color: var(--gold); }
+
+.suit-joker-black .dc-corner,
+.suit-joker-black .dc-center { color: var(--gold); }
+
+/* ── Instruction text ── */
+.deal-instruction {
+  font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold-muted);
+  min-height: 1.2em;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.deal-instruction.visible { opacity: 1; }
+
+/* ── Action row (confirm / reselect) ── */
+.deal-action-row {
+  display: flex; gap: 12px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.deal-action-row.visible {
+  opacity: 1; pointer-events: auto;
+  transform: none;
+}
+
+.deal-btn-confirm {
+  padding: 9px 28px;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--red); color: #fff8ee;
+  border: 1px solid var(--red); border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(169,20,15,0.4);
+  transition: background 0.15s;
+}
+
+.deal-btn-confirm:hover { background: var(--red-dark); border-color: var(--red-dark); }
+
+.deal-btn-reselect {
+  padding: 9px 22px;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em;
+  background: transparent; color: var(--gold-muted);
+  border: 1px solid rgba(201,168,76,0.4); border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.deal-btn-reselect:hover {
+  background: rgba(201,168,76,0.08);
+  border-color: var(--gold); color: var(--gold);
+}
+
+/* ============================================================
+   DISTRIBUTION PHASE
+   ============================================================ */
+
+.deal-scene.dist-phase {
+  gap: 18px;
+  max-width: 1075px;
+}
+
+.dist-title {
+  font-size: 1rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--gold); text-align: center;
+  margin: 0;
+}
+
+/* 6 attribute / skill drop-slots */
+.dist-slots-row {
+  display: flex; flex-wrap: nowrap;
+  justify-content: center; gap: 18px;
+  width: 100%;
+  align-items: flex-end;
+  padding-bottom: 36px;
+}
+
+.dist-slot {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  width: 135px;
+  transform-origin: bottom center;
+}
+
+/* Arc — outer slots lean and drop lower */
+.dist-slot:nth-child(1) { transform: rotate(-13deg) translateY(28px); }
+.dist-slot:nth-child(2) { transform: rotate(-6deg)  translateY(10px); }
+.dist-slot:nth-child(3) { transform: rotate(-1deg)  translateY(2px);  }
+.dist-slot:nth-child(4) { transform: rotate(1deg)   translateY(2px);  }
+.dist-slot:nth-child(5) { transform: rotate(6deg)   translateY(10px); }
+.dist-slot:nth-child(6) { transform: rotate(13deg)  translateY(28px); }
+
+.dist-slot-lbl {
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--gold); text-align: center;
+}
+
+.dist-slot-desc {
+  font-size: 0.71rem; font-weight: 400;
+  font-style: italic;
+  color: #c8b080;
+  text-align: center;
+  line-height: 1.45;
+  padding: 0 4px;
+}
+
+.dist-slot-area {
+  width: 135px; min-height: 173px;
+  border: 2px dashed rgba(201,168,76,0.28);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.dist-slot.drag-over .dist-slot-area {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(212,175,55,0.4);
+}
+
+.dist-slot-ph {
+  width: 100%; height: 173px;
+  border-radius: 7px;
+}
+
+.dist-slot-hint {
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--gold-muted);
+  min-height: 1em; text-align: center;
+}
+
+/* Pool of remaining cards to drag */
+.dist-pool {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; gap: 12px;
+  width: 100%;
+}
+
+/* Draggable / droppable cards in distribution phase */
+.dist-card {
+  width: 125px; min-height: 173px;
+  background: var(--card-dark);
+  border: 2px solid var(--gold-muted);
+  border-radius: 9px;
+  display: flex; flex-direction: column;
+  padding: 6px;
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.dist-card:hover    { border-color: var(--gold); box-shadow: 0 0 14px rgba(212,175,55,0.3); }
+.dist-card.drag-ghost { opacity: 0.3; pointer-events: none; }
+
+.dist-card.snap-in  { animation: snapIn 0.22s ease; }
+
+@keyframes snapIn {
+  from { transform: scale(1.1); }
+  to   { transform: scale(1); }
+}
+
+/* Confirm in distribution phase */
+.dist-btn-confirm {
+  align-self: center;
+  padding: 10px 36px;
+  font-size: 0.9rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--red); color: #fff8ee;
+  border: 1px solid var(--red); border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(169,20,15,0.35);
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.dist-btn-confirm:hover    { background: var(--red-dark); border-color: var(--red-dark); }
+.dist-btn-confirm:disabled { opacity: 0.38; cursor: not-allowed; box-shadow: none; }
+
+/* ── Deal button state in header ── */
+.deal-button--done { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Joker status badge ── */
+.jr-status { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; }
+.jr-black  { color: #e8d9b8; }
+.jr-red    { color: var(--red); }
+.jr-none   { color: var(--muted); }
+
+/* Harrowed silver recolour of the deal lives in css/harrowed.css */

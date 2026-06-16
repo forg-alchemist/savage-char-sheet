@@ -1,0 +1,6 @@
+.claude/
+.vscode/
+ReleaseVersion/
+
+.DS_Store
+Thumbs.db

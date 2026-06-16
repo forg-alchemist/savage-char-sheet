@@ -1,0 +1,269 @@
+/* =============================================================
+   ADVANCE MODAL — Choose advancement option
+   ============================================================= */
+
+#advance-modal {
+  position: fixed; inset: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+}
+
+#advance-modal[hidden] { display: none; }
+
+.adv-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(6, 4, 2, 0.92);
+}
+
+.adv-dialog {
+  position: relative; z-index: 1;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  padding: 26px 22px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  background: linear-gradient(160deg, rgba(28,18,10,0.98) 0%, rgba(18,11,5,0.99) 100%);
+  border: 1px solid rgba(212,175,55,0.5);
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(212,175,55,0.15), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(212,175,55,0.2);
+  transform: scale(0.92);
+  opacity: 0;
+  transition: transform 0.24s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease;
+}
+
+.adv-dialog.open {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Top gold line accent */
+.adv-dialog::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 1px;
+}
+
+.adv-header {
+  text-align: center;
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.adv-ornament {
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 4px;
+  opacity: 0.7;
+}
+
+.adv-ornament--sub {
+  font-size: 0.72rem;
+  opacity: 0.45;
+}
+
+.adv-title {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.25rem; font-weight: 900;
+  letter-spacing: 4px; text-transform: uppercase;
+  background: linear-gradient(180deg, #ffe57a 0%, #d4af37 50%, #a07820 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(212,175,55,0.4));
+}
+
+.adv-subtitle {
+  margin: 0;
+  text-align: center;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(200,176,128,0.7);
+}
+
+/* Divider */
+.adv-options {
+  display: flex; flex-direction: column; gap: 6px;
+  border-top: 1px solid rgba(212,175,55,0.15);
+  padding-top: 4px;
+}
+
+.adv-opt {
+  width: 100%;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  text-align: left;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+
+.adv-opt:not(:disabled):hover {
+  background: rgba(212,175,55,0.1);
+  border-color: rgba(212,175,55,0.55);
+}
+
+.adv-opt.selected {
+  background: rgba(212,175,55,0.15);
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(212,175,55,0.2), inset 0 0 8px rgba(212,175,55,0.05);
+}
+
+.adv-opt:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.adv-opt-text {
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.adv-opt-name {
+  font-size: 0.85rem; font-weight: 700;
+  color: #f5e6c0;
+  line-height: 1.4;
+}
+
+.adv-opt.selected .adv-opt-name {
+  color: #ffe57a;
+}
+
+.adv-opt-badge {
+  flex-shrink: 0;
+  font-size: 0.58rem; font-weight: 900;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: #ffe57a;
+  border: 1px solid rgba(212,175,55,0.65);
+  border-radius: 3px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  background: linear-gradient(160deg, rgba(28,18,10,0.96) 0%, rgba(18,11,5,0.98) 100%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.65), 0 0 7px rgba(212,175,55,0.28);
+}
+
+.adv-actions {
+  display: flex; flex-direction: column; gap: 8px;
+  border-top: 1px solid rgba(212,175,55,0.15);
+  padding-top: 4px;
+}
+
+.adv-confirm-btn {
+  padding: 11px;
+  font-size: 0.84rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--red); color: #fff8ee;
+  border: 1px solid rgba(169,20,15,0.6); border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(169,20,15,0.35);
+  transition: background 0.15s, opacity 0.15s, box-shadow 0.15s;
+}
+
+.adv-confirm-btn:not(:disabled):hover {
+  background: var(--red-dark);
+  box-shadow: 0 4px 18px rgba(169,20,15,0.55);
+}
+
+.adv-confirm-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+
+.adv-back-btn {
+  padding: 9px;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+  background: transparent; color: rgba(200,176,128,0.7);
+  border: 1px solid rgba(212,175,55,0.2); border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.adv-back-btn:hover {
+  background: rgba(212,175,55,0.07);
+  border-color: rgba(212,175,55,0.45);
+  color: var(--gold);
+}
+
+/* ── Advance pending banner (above trait board) ── */
+.adv-pending-banner {
+  padding: 8px 14px;
+  margin-bottom: 6px;
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.45);
+  border-radius: 5px;
+  color: #8a6a00;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ── Hindrance advance button (replaces "Добавить" in hindrance panel) ── */
+.hindrance-advance-btn {
+  background: var(--blue, #386b8f) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 5px 14px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.15s;
+}
+.hindrance-advance-btn:hover { background: #2d5e8e !important; }
+
+/* ── Hindrance edit overlay ── */
+.hindrance-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31,23,18,0.75);
+}
+
+.hindrance-edit-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(500px, 96vw);
+  max-height: 75vh;
+  overflow: hidden;
+}
+
+/* Reduce button inside hindrance edit picker */
+.hindrance-reduce-btn {
+  align-self: center;
+  flex-shrink: 0;
+  padding: 5px 12px;
+  background: transparent;
+  color: var(--blue, #386b8f);
+  border: 1.5px solid var(--blue, #386b8f);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.hindrance-reduce-btn:hover { background: rgba(56,107,143,0.12); }
+
+/* Staged (selected) hindrance row in edit picker */
+.picker-item--staged {
+  background: rgba(56,107,143,0.1) !important;
+  border-left: 3px solid var(--blue, #386b8f);
+}
+.picker-item--staged .hindrance-reduce-btn {
+  background: var(--blue, #386b8f);
+  color: #fff;
+}
+
+/* Row layout for hindrance edit items */
+.picker-item--hindrance-edit {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}

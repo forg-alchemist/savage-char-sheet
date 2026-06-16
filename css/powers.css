@@ -1,0 +1,50 @@
+/* =============================================================
+   POWERS — Powers section layout and field colours
+   ============================================================= */
+.powers-row {
+  display: grid;
+  grid-template-columns: 38px 96px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 10px;
+  padding: 8px 10px;
+}
+
+.powers-row h2 {
+  display: grid;
+  place-items: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  align-self: stretch;
+  color: #fff8ee;
+  background: var(--red);
+  margin: -8px 0 -8px -10px;
+  padding: 8px 0;
+  line-height: 1;
+}
+
+.power-points { display: grid; grid-template-columns: 1fr; gap: 5px; align-content: start; }
+
+.power-points label span { text-align: center; }
+
+.power-points output {
+  display: block;
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: var(--paper-bg);
+  text-align: center;
+}
+
+.power-points input[type="number"] { text-align: center; border-width: 2px; border-style: solid; }
+
+/* Blue — ПС fields */
+.power-points [data-output="powerMax"],
+.power-points [data-bind="powerCurrent"] { border-color: #2060a8; color: #2060a8; }
+
+/* Red — Силы fields */
+.power-points [data-output="silyMax"],
+.power-points [data-output="silyCurrent"] { border-color: var(--red); color: var(--red); }
+
+.power-picker { min-width: 0; }
+.powers-list  { max-height: none; }

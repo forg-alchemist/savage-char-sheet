@@ -1,0 +1,191 @@
+/* =============================================================
+   TRAITS — Trait board, dice track, arcane skills
+   ============================================================= */
+.trait-board   { padding: 12px 80px 12px 12px; }
+.trait-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.trait-column  { display: grid; align-content: start; gap: 26px; }
+.trait-group   { display: grid; gap: 4px; }
+
+.trait-line,
+.trait-row { display: grid; grid-template-columns: 148px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 26px; }
+
+.attribute-line { margin-bottom: 2px; grid-template-columns: 148px minmax(0, 1fr) auto; }
+
+.trait-label,
+.trait-name-input {
+  border: 0;
+  border-bottom: 2px solid rgba(169,20,15,0.48);
+  border-radius: 0;
+  padding: 0 0 1px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 0.93rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.attribute-line .trait-label { color: var(--red); font-size: 1.28rem; }
+
+.attribute-line .trait-label[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+.attribute-line .trait-label[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 210px;
+  background: rgba(14, 10, 6, 0.96);
+  color: #e8d9b8;
+  border: 1px solid rgba(212,175,55,0.35);
+  border-radius: 5px;
+  padding: 7px 11px;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-transform: none;
+  font-style: italic;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  z-index: 60;
+}
+
+.attribute-line .trait-label[data-tooltip]:hover::after {
+  opacity: 1;
+}
+.trait-name-input:read-only  { pointer-events: none; outline: none; user-select: none; }
+
+.trait-row.starred .trait-name-input { color: var(--red); }
+
+/* Custom / arcane skills */
+.custom-skill .trait-name-input { border-bottom-style: dashed; border-bottom-color: rgba(169,20,15,0.28); }
+.custom-skill .trait-name-input::placeholder { color: rgba(111,98,84,0.45); font-weight: 400; font-style: italic; }
+
+.arcane-skill  { grid-template-columns: 148px minmax(0, 1fr) 20px; }
+
+.arcane-remove {
+  width: 20px; min-height: 20px; padding: 0; font-size: 0.85rem; line-height: 1;
+  background: transparent; border: none; color: var(--muted); cursor: pointer; opacity: 0.5;
+}
+
+.arcane-remove:hover { color: var(--red); opacity: 1; background: transparent; border: none; }
+
+.arcane-add-row { padding: 2px 0; }
+
+.arcane-select {
+  width: 100%;
+  font-size: 0.78rem;
+  font-family: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(169,20,15,0.35);
+  padding: 2px 4px;
+  cursor: pointer;
+  outline: none;
+  font-style: italic;
+}
+
+.arcane-select:focus { border-bottom-color: var(--red); color: var(--ink); }
+
+/* Lock / upgrade states */
+.attribute-locked .die-button:disabled,
+.skill-locked .die-button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.attribute-locked .die-button:disabled.active,
+.skill-locked .die-button:disabled.active { opacity: 1; }
+
+.dice-track--upgrade .die-button:disabled { opacity: 0.18; cursor: not-allowed; }
+
+.attr-plus-btn {
+  padding: 0 7px;
+  min-height: 26px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  background: rgba(212,175,55,0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.attr-plus-btn:hover { background: rgba(212,175,55,0.25); border-color: var(--gold); }
+
+/* Skill tooltips */
+.trait-row[data-tooltip] { position: relative; }
+
+.trait-row[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 200;
+  background: #2a2017;
+  color: #f5ead4;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 6px 10px;
+  border-radius: 5px;
+  white-space: normal;
+  width: 220px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+
+.trait-row[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  bottom: calc(100% + 1px);
+  z-index: 201;
+  border: 5px solid transparent;
+  border-top-color: #2a2017;
+  pointer-events: none;
+}
+
+/* ── Dice track ── */
+.dice-track { display: grid; grid-template-columns: repeat(5, 24px); gap: 3px; }
+
+.die-button {
+  display: grid;
+  width: 24px;
+  min-height: 24px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  color: #111;
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.die-button svg  { display: block; width: 24px; height: 22px; }
+.die-button text { fill: #111; font-size: 9px; font-weight: 900; pointer-events: none; }
+.die-shape       { fill: #fffdf6; stroke: #111; stroke-width: 2.4; }
+
+.die-button:hover            { color: var(--red); background: transparent; }
+.die-button:hover .die-shape { stroke: var(--red); }
+.die-button:hover text       { fill: var(--red); }
+
+.die-button.active .die-shape { fill: #080808; stroke: #080808; }
+.die-button.active text       { fill: #fffdf6; }
+
+.die-button--upgrade {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 6px rgba(212,175,55,0.55);
+  animation: upgradePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes upgradePulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(212,175,55,0.4); }
+  50%       { box-shadow: 0 0 10px rgba(212,175,55,0.75); }
+}

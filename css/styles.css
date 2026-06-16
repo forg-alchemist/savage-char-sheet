@@ -1,0 +1,20 @@
+/* =============================================================
+   MASTER — imports all CSS modules in dependency order
+   ============================================================= */
+
+@import "base.css";
+@import "layout.css";
+@import "identity.css";
+@import "marshal.css";
+@import "harrowed.css";
+@import "portrait.css";
+@import "tracks.css";
+@import "traits.css";
+@import "choices.css";
+@import "mount.css";
+@import "powers.css";
+@import "picker.css";
+@import "deal.css";
+@import "instruction.css";
+@import "advance.css";
+@import "archetypeInfo.css";
