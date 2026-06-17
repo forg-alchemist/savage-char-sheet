@@ -1,10 +1,10 @@
 // Версия листа персонажа — единый источник истины (выводится в футере)
-const APP_VERSION = "0.9.5p";
+const APP_VERSION = "0.9.6";
 
 const STORAGE_KEY = "deadlands-character-sheet-v6";
 const DICE_VALUES = [4, 6, 8, 10, 12];
 const RANK_ORDER = ["Новичок", "Закалённый", "Ветеран", "Герой", "Легенда"];
-const CATALOGS = window.DEADLANDS_CATALOGS || { hindrances: [], edges: [], powers: [], weapons: [], armor: [], mountGear: [] };
+const CATALOGS = window.DEADLANDS_CATALOGS || { hindrances: [], edges: [], powers: [], weapons: [], armor: [], gear: [], mountGear: [], mountArmor: [] };
 
 const DICE_SHAPES = {
   4:  "16,2 30,26 2,26",

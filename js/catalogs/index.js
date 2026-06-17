@@ -15,7 +15,9 @@
   _addIds(window.DEADLANDS_CATALOG_POWERS            || [], 'p');
   _addIds(window.DEADLANDS_CATALOG_WEAPONS           || [], 'w');
   _addIds(window.DEADLANDS_CATALOG_ARMOR             || [], 'a');
+  _addIds(window.DEADLANDS_CATALOG_GEAR              || [], 'g');
   _addIds(window.DEADLANDS_CATALOG_MOUNT_GEAR        || [], 'mg');
+  _addIds(window.DEADLANDS_CATALOG_MOUNT_ARMOR       || [], 'ma');
 })();
 
 // Main catalog registry (used everywhere via CATALOGS.type)
@@ -28,7 +30,9 @@ window.DEADLANDS_CATALOGS = {
   powers:  window.DEADLANDS_CATALOG_POWERS,
   weapons: window.DEADLANDS_CATALOG_WEAPONS,
   armor:   window.DEADLANDS_CATALOG_ARMOR,
+  gear:    window.DEADLANDS_CATALOG_GEAR || [],
   mountGear: window.DEADLANDS_CATALOG_MOUNT_GEAR || [],
+  mountArmor: window.DEADLANDS_CATALOG_MOUNT_ARMOR || [],
 };
 
 // O(1) lookup by ID for each catalog type

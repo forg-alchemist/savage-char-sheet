@@ -68,7 +68,12 @@ function _buildCompactV2(raw, artData) {
 
   // _arcaneGift powers are auto-added from edges on load — skip them
   compact.powerIds  = (raw.selectedPowers || []).filter(p => !p._arcaneGift && p.id).map(p => p.id);
-  compact.weaponIds = (raw.weapons || []).filter(w => w.id).map(w => w._worn ? { id: w.id, _worn: true } : w.id);
+  compact.weaponIds = (raw.weapons || []).filter(w => w.id).map(w => {
+    const flags = {};
+    if (w._worn) flags._worn = true;
+    if (w._stashed) flags._stashed = true;
+    return Object.keys(flags).length ? { id: w.id, ...flags } : w.id;
+  });
   compact.armorIds  = (raw.selectedArmor  || []).filter(a => a.id && isCharacterArmor(a)).map(a => a._equipped ? { id: a.id, _equipped: true } : a.id);
   if (compact.mount) compact.mount = _compactMountForExport(compact.mount);
   compact.art       = artData || "";
@@ -178,6 +183,7 @@ function _reconstructV2(compact) {
 
   state.weapons = weaponRefs.map(ref => {
     const worn = typeof ref === 'object' && ref._worn;
+    const stashed = typeof ref === 'object' && ref._stashed;
     const idOrStr = typeof ref === 'object' ? ref.id : ref;
     let found = null;
     if (_isIdRef(idOrStr)) {
@@ -186,6 +192,7 @@ function _reconstructV2(compact) {
       const f = CAT_W.find(w => w.name === idOrStr); if (f) found = { ...f };
     }
     if (found && worn) found._worn = true;
+    if (found && stashed) found._stashed = true;
     return found;
   }).filter(Boolean);
 

@@ -241,6 +241,7 @@ function getCatalogStateKey(type) {
   if (type === "powers") return "selectedPowers";
   if (type === "weapons") return "weapons";
   if (type === "armor") return "selectedArmor";
+  if (type === "gear") return "gear";
   return "selectedHindrances";
 }
 
@@ -250,7 +251,14 @@ function getCatalogMeta(item, type) {
     return item.category;
   }
   if (type === "powers") {
-    return `${item.rank} · ${item.points} ПС · ${item.range} · ${item.duration}`;
+    const parts = getPowerDisplayParts(item);
+    return `${item.rank} · ${item.points} ПС · ${parts.range} · ${item.duration}`;
+  }
+  if (type === "gear") {
+    const parts = [];
+    if (item.price) parts.push(`Цена: ${item.price}`);
+    if (item.weight !== undefined && item.weight !== null) parts.push(`Вес: ${item.weight}`);
+    return parts.join(" · ");
   }
   return `${item.degree}${item.penalty && item.penalty !== "-" ? ` · ${item.penalty}` : ""}`;
 }
@@ -264,6 +272,21 @@ function getPowerPoints(item) {
 function isCharacterArmor(item) {
   const def = (item?.id && window.CATALOG_BY_ID?.armor?.[item.id]) || item;
   return Array.isArray(def?.sectors) && def.sectors.length > 0;
+}
+
+const ARMOR_SECTOR_LABELS = {
+  head: "Голова",
+  torso: "Торс",
+  arms: "Руки",
+  legs: "Ноги",
+};
+
+function formatArmorSectors(item) {
+  const def = (item?.id && window.CATALOG_BY_ID?.armor?.[item.id]) || item;
+  const sectors = Array.isArray(def?.sectors) ? def.sectors : [];
+  return sectors.length
+    ? sectors.map(sector => ARMOR_SECTOR_LABELS[sector] || sector).join(", ")
+    : "—";
 }
 
 function pruneNonCharacterArmor() {
@@ -294,17 +317,72 @@ function computeCurrentSily() {
   return (state.selectedPowers || []).filter(p => !isSubPower(p) && !p._arcaneGift).length;
 }
 
+function isPowersAtMax() {
+  return computeCurrentSily() >= computeMaxSily();
+}
+
+function arePowersLocked() {
+  return state.powersDone && !state.marshalMode && computeCurrentSily() === computeMaxSily();
+}
+
 function hasContent(val) {
   if (!val) return false;
   const s = String(val).trim();
   return s !== "" && s !== "-" && s !== "—" && s !== "–";
 }
 
+function getPowerCatalogDefinition(item) {
+  if (!item) return item;
+  return (item.id && window.CATALOG_BY_ID?.powers?.[item.id])
+    || (CATALOGS.powers || []).find(power => power.id && power.id === item.id)
+    || (CATALOGS.powers || []).find(power => power.name === item.name)
+    || item;
+}
+
+function getCurrentArchetypeNames() {
+  if (typeof computeArchetypes === "function") return computeArchetypes();
+  return state.archetype ? [state.archetype] : [];
+}
+
+const POWER_ARCHETYPE_DESCRIPTION_FIELDS = [
+  { archetype: "Картёжник", effect: "effectCardsharp", modifiers: "modifiersCardsharp", range: "rangeCardsharp" },
+  { archetype: "Рунный стрелок", effect: "effectRuneShooter", modifiers: "modifiersRuneShooter", range: "rangeRuneShooter" },
+  { archetype: "Безумный учёный", effect: "effectMadScientist", modifiers: "modifiersMadScientist", range: "rangeMadScientist" },
+  { archetype: "Чудотворец", effect: "effectMiracleWorker", modifiers: "modifiersMiracleWorker", range: "rangeMiracleWorker" },
+  { archetype: "Вудуист", effect: "effectVoodooist", modifiers: "modifiersVoodooist", range: "rangeVoodooist" },
+  { archetype: "Шаман", effect: "effectShaman", modifiers: "modifiersShaman", range: "rangeShaman" },
+  { archetype: "Просветлённый", effect: "effectEnlightened", modifiers: "modifiersEnlightened", range: "rangeEnlightened" },
+];
+
+function getPowerDisplayParts(item) {
+  const definition = getPowerCatalogDefinition(item);
+  const activeArchetypes = getCurrentArchetypeNames();
+  const fields = POWER_ARCHETYPE_DESCRIPTION_FIELDS.find(entry =>
+    activeArchetypes.includes(entry.archetype)
+    && (Object.prototype.hasOwnProperty.call(definition || {}, entry.effect)
+      || Object.prototype.hasOwnProperty.call(definition || {}, entry.modifiers)
+      || Object.prototype.hasOwnProperty.call(definition || {}, entry.range))
+  );
+  return {
+    effect: fields && Object.prototype.hasOwnProperty.call(definition || {}, fields.effect)
+      ? definition[fields.effect]
+      : (definition?.effect ?? item.effect),
+    modifiers: fields && Object.prototype.hasOwnProperty.call(definition || {}, fields.modifiers)
+      ? definition[fields.modifiers]
+      : (definition?.modifiers ?? item.modifiers),
+    range: fields && Object.prototype.hasOwnProperty.call(definition || {}, fields.range)
+      ? definition[fields.range]
+      : (definition?.range ?? item.range),
+  };
+}
+
 function getCatalogDescription(item, type) {
   if (type === "edges") return item.effect;
   if (type === "powers") {
-    return hasContent(item.modifiers) ? `${item.effect} Усиления: ${item.modifiers}` : item.effect;
+    const parts = getPowerDisplayParts(item);
+    return hasContent(parts.modifiers) ? `${parts.effect} Усиления: ${parts.modifiers}` : parts.effect;
   }
+  if (type === "gear") return item.notes || item.description || "";
   // Альтернативное описание для Меченного, если задано в сущности айтема
   if (state.harrowed && item.descriptionHarrowed) return item.descriptionHarrowed;
   return item.description;
@@ -420,8 +498,7 @@ function addCatalogChoice(type) {
   if (exists) return;
 
   if (type === "powers" && !state.marshalMode && !item._arcaneGift && !isSubPower(item)) {
-    const silyMax = computeMaxSily();
-    if (computeCurrentSily() >= silyMax) {
+    if (isPowersAtMax()) {
       showToast("ДОСТИГНУТ ЛИМИТ СИЛ");
       return;
     }

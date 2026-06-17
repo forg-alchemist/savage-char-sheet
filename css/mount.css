@@ -99,6 +99,23 @@
   text-shadow: 0 1px 8px rgba(0,0,0,0.7);
 }
 
+.mount-money-badge {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(210,160,50,0.42);
+  border-radius: 5px;
+  background: rgba(0,0,0,0.28);
+  color: #f2cf6a;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px rgba(255,235,170,0.04);
+}
+
 .mount-dialog-close {
   position: relative;
   z-index: 1;
@@ -133,11 +150,120 @@
   background: #1c1008;
 }
 
+.mount-options--equipment {
+  flex: 1;
+}
+
+.mount-equipment-pager {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  background: #1c1008;
+  border-bottom: 1px solid rgba(210,160,50,0.18);
+}
+
+.mount-equipment-page-btn {
+  width: 42px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(210,160,50,0.32);
+  border-radius: 7px;
+  background: rgba(210,160,50,0.1);
+  color: #f2cf6a;
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s, opacity 0.15s;
+}
+
+.mount-equipment-page-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(210,160,50,0.18);
+  border-color: rgba(210,160,50,0.55);
+}
+
+.mount-equipment-page-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.mount-equipment-page-label {
+  min-width: 0;
+  min-height: 38px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.mount-equipment-page-icon {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.mount-equipment-page-icon--common {
+  color: #d4aa38;
+  background: rgba(210,160,50,0.16);
+  border: 1px solid rgba(210,160,50,0.32);
+}
+
+.mount-equipment-page-icon--armor {
+  color: #f07070;
+  background: rgba(169,20,15,0.18);
+  border: 1px solid rgba(169,20,15,0.35);
+}
+
+.mount-equipment-page-icon--mystic {
+  color: #d9b7ff;
+  background: rgba(126,82,190,0.22);
+  border: 1px solid rgba(155,112,225,0.42);
+}
+
+.mount-equipment-page-text {
+  min-width: 0;
+  overflow: hidden;
+  color: #f3e6c8;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mount-equipment-page-label--common .mount-equipment-page-text { color: #d4aa38; }
+.mount-equipment-page-label--armor .mount-equipment-page-text { color: #f07070; }
+.mount-equipment-page-label--mystic .mount-equipment-page-text { color: #d9b7ff; }
+
+.mount-option-empty {
+  padding: 22px 16px;
+  border: 1px dashed rgba(210,160,50,0.24);
+  border-radius: 7px;
+  color: rgba(255,255,255,0.42);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .mount-option {
   display: grid;
-  grid-template-columns: 52px 1fr auto;
-  align-items: center;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: start;
   gap: 0 14px;
+  min-height: auto;
   padding: 14px 16px;
   margin-bottom: 9px;
   border: 1.5px solid rgba(255,255,255,0.07);
@@ -162,6 +288,7 @@
   font-size: 1.55rem;
   line-height: 1;
   flex-shrink: 0;
+  align-self: center;
   transition: transform 0.15s;
 }
 
@@ -180,6 +307,7 @@
 }
 
 .mount-option-body {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -193,9 +321,12 @@
 }
 
 .mount-option-note {
+  display: block;
   font-size: 0.7rem;
   color: rgba(255,255,255,0.38);
   line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .mount-option-stat {
@@ -213,6 +344,7 @@
 }
 
 .mount-option-price {
+  align-self: center;
   font-size: 1rem;
   font-weight: 900;
   white-space: nowrap;
@@ -266,33 +398,57 @@
   margin-bottom: 0;
 }
 
-.mount-option--regular {
+.mount-option--regular,
+.mount-option--common {
   border-color: rgba(210,160,50,0.3);
 }
-.mount-option--regular:hover {
+.mount-option--regular:hover,
+.mount-option--common:hover {
   background: rgba(210,160,50,0.07);
   border-color: rgba(210,160,50,0.55);
   box-shadow: 0 8px 24px rgba(210,160,50,0.14), 0 0 0 1px rgba(210,160,50,0.18);
 }
-.mount-option--regular .mount-option-icon {
+.mount-option--regular .mount-option-icon,
+.mount-option--common .mount-option-icon {
   color: #d4aa38;
   background: rgba(210,160,50,0.16);
   border: 1px solid rgba(210,160,50,0.32);
 }
 
-.mount-option--warhorse {
+.mount-option--warhorse,
+.mount-option--armor {
   border-color: rgba(169,20,15,0.36);
 }
-.mount-option--warhorse:hover {
+.mount-option--warhorse:hover,
+.mount-option--armor:hover {
   background: rgba(169,20,15,0.08);
   border-color: rgba(169,20,15,0.6);
   box-shadow: 0 8px 24px rgba(169,20,15,0.18), 0 0 0 1px rgba(169,20,15,0.2);
 }
-.mount-option--warhorse .mount-option-icon {
+.mount-option--warhorse .mount-option-icon,
+.mount-option--armor .mount-option-icon {
   color: #f07070;
   background: rgba(169,20,15,0.18);
   border: 1px solid rgba(169,20,15,0.35);
 }
+.mount-option--armor .mount-option-label { color: #f07070; }
+.mount-option--armor .mount-option-price { color: #f07070; }
+
+.mount-option--mystic {
+  border-color: rgba(126,82,190,0.38);
+}
+.mount-option--mystic:hover {
+  background: rgba(126,82,190,0.09);
+  border-color: rgba(155,112,225,0.66);
+  box-shadow: 0 8px 24px rgba(126,82,190,0.2), 0 0 0 1px rgba(155,112,225,0.22);
+}
+.mount-option--mystic .mount-option-icon {
+  color: #d9b7ff;
+  background: rgba(126,82,190,0.22);
+  border: 1px solid rgba(155,112,225,0.42);
+}
+.mount-option--mystic .mount-option-label { color: #d9b7ff; }
+.mount-option--mystic .mount-option-price { color: #d9b7ff; }
 
 .mount-option--locked,
 .mount-option--locked:hover {
@@ -300,6 +456,10 @@
   opacity: 0.55;
   transform: none;
   box-shadow: none;
+}
+
+.mount-option--locked .mount-option-price {
+  color: #f2cf6a;
 }
 
 .horse-panel {
@@ -670,13 +830,46 @@
   gap: 6px;
   align-items: center;
   padding: 6px 7px;
-  border: 1px solid rgba(200,180,132,0.45);
+  border: 1px solid rgba(132,86,28,0.62);
   border-radius: 3px;
   background: var(--paper-bg);
 }
 
 .mount-equipment-row:hover {
-  background: linear-gradient(rgba(169,20,15,0.04), rgba(169,20,15,0.04)), var(--paper-bg);
+  background: linear-gradient(rgba(132,86,28,0.08), rgba(132,86,28,0.08)), var(--paper-bg);
+}
+
+.mount-equipment-row--common {
+  border-color: rgba(132,86,28,0.62);
+}
+
+.mount-equipment-row--mystic {
+  border-color: rgba(104,62,160,0.58);
+  background: linear-gradient(rgba(104,62,160,0.08), rgba(104,62,160,0.08)), var(--paper-bg);
+}
+
+.mount-equipment-row--mystic:hover {
+  background: linear-gradient(rgba(104,62,160,0.14), rgba(104,62,160,0.14)), var(--paper-bg);
+}
+
+.mount-equipment-row--mystic .mount-equipment-main strong {
+  color: #6f2fa7;
+}
+
+.mount-equipment-row--armor {
+  border-color: rgba(169,20,15,0.58);
+  background: linear-gradient(rgba(169,20,15,0.06), rgba(169,20,15,0.06)), var(--paper-bg);
+}
+
+.mount-equipment-row--armor:hover {
+  background: linear-gradient(rgba(169,20,15,0.11), rgba(169,20,15,0.11)), var(--paper-bg);
+}
+
+.mount-equipment-row--armor .mount-equipment-main strong {
+  color: var(--red);
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
 }
 
 .mount-equipment-main {
@@ -723,6 +916,14 @@
   font-style: italic;
   line-height: 1.3;
   white-space: normal;
+}
+
+.mount-equipment-row--armor .mount-equipment-desc {
+  color: #4b2b17;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.35;
 }
 
 .mount-equipment-row button {
@@ -781,6 +982,12 @@
   padding-right: 8px;
   border-color: rgba(122,13,9,0.28);
   background: rgba(117,61,24,0.16);
+}
+
+.mount-edge-card {
+  padding-right: 8px;
+  border-color: rgba(118,78,17,0.38);
+  background: rgba(210,160,50,0.13);
 }
 
 .mount-hindrance-card strong {

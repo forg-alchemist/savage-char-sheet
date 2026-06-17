@@ -3,8 +3,32 @@
 const MOUNT_HINDRANCE_IDS = window.DEADLANDS_MOUNT_HINDRANCE_IDS || [];
 
 const MOUNT_RUN_DICE = ["d2", "d4", "d6", "d8"];
+const MOUNT_BLINDNESS_HINDRANCE_ID = "h085";
+const MOUNT_AGING_HINDRANCE_ID = "h086";
+const MOUNT_BLINDNESS_EDGE_IDS = [
+  "e004", // Бдительность
+  "e009", // Блок
+  "e014", // Боевая закалка
+  "e019", // Бугай
+  "e029", // Грозный вид
+  "e035", // Егерь
+  "e036", // Железная воля
+  "e045", // Как на собаке
+  "e046", // Контратака
+  "e080", // Смелость
+  "e082", // Стальная челюсть
+  "e089", // Тяжеловес
+];
 
 const MOUNT_GEAR_ITEMS = window.DEADLANDS_MOUNT_GEAR_BY_KEY || {};
+const MOUNT_GEAR_CATALOG = window.DEADLANDS_CATALOG_MOUNT_GEAR || [];
+const MOUNT_ARMOR_CATALOG = window.DEADLANDS_CATALOG_MOUNT_ARMOR || [];
+
+const MOUNT_EQUIPMENT_GROUPS = [
+  { key: "common", label: "Общие", icon: "▣" },
+  { key: "armor", label: "Броня", icon: "▰" },
+  { key: "mystic", label: "Мистические", icon: "✦" },
+];
 
 const MOUNT_VARIANTS = {
   regular: {
@@ -14,15 +38,15 @@ const MOUNT_VARIANTS = {
     icon: "assets/Horse/RegularHorse.png",
     priceCents: 15000,
     loadLimit: 90,
-    summary: "Быстрая верховая лошадь для путешествий и груза.",
-    lead: "Лошади быстры и могут переносить большие веса.",
+    summary: "Быстрая верховая лошадь для путешествий и груза",
+    lead: "Лошади быстры и могут переносить большие веса",
     traits: "Ловкость d8, Смекалка d4 (ж), Характер d6, Сила d12, Выносливость d8",
     skills: "Атлетика d8, Внимание d6, Драка d4",
     indicators: { pace: 6, runDie: "d6", parry: 4, toughness: 8 },
     edges: "Быстроногость",
     features: [
-      "<strong>Размер 2:</strong> обычная верховая лошадь весит около 500 кг.",
-      "<strong>Удар копытами:</strong> по целям спереди или позади; Сила+d4.",
+      "<strong>Размер 2:</strong> обычная верховая лошадь весит около 500 кг",
+      "<strong>Удар копытами:</strong> по целям спереди или позади; Сила+d4",
     ],
   },
   warhorse: {
@@ -32,15 +56,15 @@ const MOUNT_VARIANTS = {
     icon: "assets/Horse/WarHorse.png",
     priceCents: 37500,
     loadLimit: 210,
-    summary: "Крупный и отважный конь, не теряется в гуще сражения.",
-    lead: "Боевые лошади крупны и отважны. Они не теряются в гуще сражения и всегда готовы ударить врага копытами.",
+    summary: "Крупный и отважный конь, не теряется в гуще сражения",
+    lead: "Боевые лошади крупны и отважны. Они не теряются в гуще сражения и всегда готовы ударить врага копытами",
     traits: "Ловкость d6, Смекалка d4 (ж), Характер d6, Сила d12+2, Выносливость d10",
     skills: "Атлетика d6, Внимание d6, Драка d8",
     indicators: { pace: 4, runDie: "d6", parry: 6, toughness: 10 },
     edges: "Быстроногость",
     features: [
-      "<strong>Размер 3:</strong> боевую подготовку проходят самые крупные и крепкие лошади.",
-      "<strong>Удар копытами:</strong> по целям спереди или позади; Сила+d4.",
+      "<strong>Размер 3:</strong> боевую подготовку проходят самые крупные и крепкие лошади",
+      "<strong>Удар копытами:</strong> по целям спереди или позади; Сила+d4",
     ],
   },
 };
@@ -91,6 +115,7 @@ function openMountModal() {
         <div class="mount-dialog-eyebrow">Покупка</div>
         <h3 class="mount-title">Вариант лошади</h3>
       </div>
+      <span class="mount-money-badge" data-mount-money></span>
       <button type="button" class="mount-dialog-close">×</button>
     </div>
     <div class="mount-options mount-options--variants">
@@ -106,6 +131,7 @@ function openMountModal() {
     </div>`;
 
   dialog.querySelector(".mount-dialog-close").addEventListener("click", closeMountModal);
+  updateMountMoneyBadges(dialog);
   dialog.querySelectorAll("[data-mount-kind]").forEach(btn => {
     btn.addEventListener("click", () => {
       openMountAcquisitionModal(btn.dataset.mountKind);
@@ -136,6 +162,7 @@ function openMountAcquisitionModal(kind) {
         <div class="mount-dialog-eyebrow">Снаряжение</div>
         <h3 class="mount-title">${definition.label}</h3>
       </div>
+      <span class="mount-money-badge" data-mount-money></span>
       <button type="button" class="mount-dialog-close">×</button>
     </div>
     <div class="mount-options">
@@ -151,6 +178,7 @@ function openMountAcquisitionModal(kind) {
     </div>`;
 
   dialog.querySelector(".mount-dialog-close").addEventListener("click", closeMountModal);
+  updateMountMoneyBadges(dialog);
   dialog.querySelectorAll("[data-mount-source]").forEach(btn => {
     btn.addEventListener("click", () => {
       const opt = MOUNT_ACQUISITION_OPTIONS.find(o => o.source === btn.dataset.mountSource);
@@ -166,6 +194,12 @@ function closeMountModal() {
   document.querySelector(".mount-modal")?.remove();
 }
 
+function updateMountMoneyBadges(root = document) {
+  root.querySelectorAll("[data-mount-money]").forEach(badge => {
+    badge.textContent = `ДЕНЬГИ: ${formatMountMoney(getMountMoneyCents())}`;
+  });
+}
+
 function openMountEquipmentModal() {
   if (!state.horseActive || !state.mount) {
     showToast("Сначала нужна лошадь");
@@ -173,8 +207,8 @@ function openMountEquipmentModal() {
   }
   document.querySelector(".mount-modal")?.remove();
   ensureMountEquipment();
+  let groupIndex = 0;
 
-  const options = getMountEquipmentPurchaseOptions();
   const modal = document.createElement("div");
   modal.className = "mount-modal";
 
@@ -191,31 +225,79 @@ function openMountEquipmentModal() {
         <div class="mount-dialog-eyebrow">Покупка</div>
         <h3 class="mount-title">Снаряжение лошади</h3>
       </div>
+      <span class="mount-money-badge" data-mount-money></span>
       <button type="button" class="mount-dialog-close">×</button>
     </div>
-    <div class="mount-options">
-      ${options.map(o => `
-        <button type="button" class="mount-option mount-option--${o.variant}${o.locked ? " mount-option--locked" : ""}" data-mount-equipment="${o.key}" ${o.locked ? "disabled" : ""}>
-          <span class="mount-option-icon">${o.icon}</span>
-          <span class="mount-option-body">
-            <span class="mount-option-label">${o.label}</span>
-            <span class="mount-option-note">${o.note}</span>
-          </span>
-          <span class="mount-option-price">${o.locked ? o.lockedLabel : formatMountPrice(o.priceCents)}</span>
-        </button>`).join("")}
+    <div class="mount-equipment-pager">
+      <button type="button" class="mount-equipment-page-btn" data-mount-equipment-page="prev" aria-label="Предыдущая категория">‹</button>
+      <div class="mount-equipment-page-label" data-mount-equipment-category></div>
+      <button type="button" class="mount-equipment-page-btn" data-mount-equipment-page="next" aria-label="Следующая категория">›</button>
+    </div>
+    <div class="mount-options mount-options--equipment" data-mount-equipment-options>
     </div>`;
 
   dialog.querySelector(".mount-dialog-close").addEventListener("click", closeMountModal);
-  dialog.querySelectorAll("[data-mount-equipment]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const option = options.find(o => o.key === btn.dataset.mountEquipment);
-      if (!option || option.locked) return;
-      buyMountEquipment(option);
+
+  const optionsRoot = dialog.querySelector("[data-mount-equipment-options]");
+  const categoryLabel = dialog.querySelector("[data-mount-equipment-category]");
+  const prevBtn = dialog.querySelector('[data-mount-equipment-page="prev"]');
+  const nextBtn = dialog.querySelector('[data-mount-equipment-page="next"]');
+
+  const renderGroup = () => {
+    const options = getMountEquipmentPurchaseOptions();
+    const optionsByKey = new Map(options.map(option => [option.key, option]));
+    const groups = MOUNT_EQUIPMENT_GROUPS.map(group => ({
+      ...group,
+      options: options.filter(option => option.variant === group.key),
+    }));
+    groupIndex = Math.max(0, Math.min(groupIndex, groups.length - 1));
+    const group = groups[groupIndex];
+    updateMountMoneyBadges(dialog);
+    categoryLabel.className = `mount-equipment-page-label mount-equipment-page-label--${group.key}`;
+    categoryLabel.innerHTML = `
+      <span class="mount-equipment-page-icon mount-equipment-page-icon--${group.key}">${group.icon}</span>
+      <span class="mount-equipment-page-text">${group.label}</span>`;
+    prevBtn.disabled = groupIndex === 0;
+    nextBtn.disabled = groupIndex === groups.length - 1;
+    optionsRoot.innerHTML = group.options.length
+      ? group.options.map(renderMountEquipmentPurchaseOption).join("")
+      : `<div class="mount-option-empty">Нет предметов в категории</div>`;
+    optionsRoot.querySelectorAll("[data-mount-equipment]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const option = optionsByKey.get(btn.dataset.mountEquipment);
+        if (!option || option.locked) return;
+        if (buyMountEquipment(option)) renderGroup();
+      });
     });
+  };
+
+  prevBtn.addEventListener("click", () => {
+    if (groupIndex <= 0) return;
+    groupIndex -= 1;
+    renderGroup();
   });
+  nextBtn.addEventListener("click", () => {
+    if (groupIndex >= MOUNT_EQUIPMENT_GROUPS.length - 1) return;
+    groupIndex += 1;
+    renderGroup();
+  });
+
+  renderGroup();
 
   modal.append(backdrop, dialog);
   document.body.append(modal);
+}
+
+function renderMountEquipmentPurchaseOption(o) {
+  return `
+    <button type="button" class="mount-option mount-option--${o.variant}${o.locked ? " mount-option--locked" : ""}" data-mount-equipment="${o.key}" ${o.locked ? "disabled" : ""}>
+      <span class="mount-option-icon">${o.icon}</span>
+      <span class="mount-option-body">
+        <span class="mount-option-label">${o.label}</span>
+        <span class="mount-option-note">${o.note}</span>
+      </span>
+      <span class="mount-option-price">${o.locked ? o.lockedLabel : formatMountPrice(o.priceCents)}</span>
+    </button>`;
 }
 
 function getMountDefinition(kind) {
@@ -257,6 +339,7 @@ function activateMount(kind, option) {
   closeMountModal();
   hydrateInputs();
   renderMount();
+  refreshMountWeaponControls();
   scheduleSave();
 }
 
@@ -264,11 +347,81 @@ function toggleMount() {
   if (state.horseActive) {
     state.horseActive = false;
     state.mount = null;
+    // Снятая лошадь возвращает все винтовки из чехлов персонажу
+    let changed = false;
+    (state.weapons || []).forEach(w => { if (w._stashed) { w._stashed = false; changed = true; } });
     renderMount();
+    if (changed) recalculate();
+    else refreshMountWeaponControls();
     scheduleSave();
   } else {
     openMountModal();
   }
+}
+
+// ── Седельные сумки: убрать/вытащить винтовку (вес переносится на лошадь) ──
+function getRifleSlotCount() {
+  if (!(state.horseActive && state.mount)) return 0;
+  const equipment = ensureMountEquipment();
+  const saddlebags = MOUNT_GEAR_ITEMS["saddlebags"];
+  const legacyScabbard = MOUNT_GEAR_ITEMS["rifleScabbard"];
+  const saddlebagSlots = saddlebags ? getMountGearOwnedCount(equipment, saddlebags) : 0;
+  const legacySlots = legacyScabbard ? getMountGearOwnedCount(equipment, legacyScabbard) : 0;
+  return saddlebagSlots || legacySlots;
+}
+
+function getScabbardCount() {
+  return getRifleSlotCount();
+}
+
+// В чехол убираются длинноствольные: винтовки, ружья (дробовики) и карабины
+const SCABBARD_WEAPON_GROUPS = new Set(["Винтовки", "Ружья", "Карабины"]);
+function isRifleWeapon(weapon) {
+  if (!weapon) return false;
+  const def = (weapon.id && window.CATALOG_BY_ID?.weapons?.[weapon.id]) || weapon;
+  return SCABBARD_WEAPON_GROUPS.has(def.group || weapon.group);
+}
+
+function getStashedRifles() {
+  return (state.weapons || []).filter(w => w._stashed);
+}
+
+function canStashRifle() {
+  return getStashedRifles().length < getRifleSlotCount();
+}
+
+function refreshMountWeaponControls() {
+  if (typeof renderChoiceList === "function") renderChoiceList("weapons");
+}
+
+function stashRifle(weapon) {
+  if (!weapon || !isRifleWeapon(weapon)) return;
+  if (!canStashRifle()) { showToast("Нет свободной седельной сумки для винтовки"); return; }
+  weapon._stashed = true;
+  renderChoiceList("weapons");
+  renderMount();
+  recalculate();
+  scheduleSave();
+}
+
+function unstashRifle(weapon) {
+  if (!weapon) return;
+  weapon._stashed = false;
+  renderChoiceList("weapons");
+  renderMount();
+  recalculate();
+  scheduleSave();
+}
+
+// Возвращает лишние винтовки, если чехлов стало меньше, чем убрано винтовок
+function reconcileStashedRifles() {
+  const cap = getRifleSlotCount();
+  const stashed = getStashedRifles();
+  if (stashed.length > cap) {
+    stashed.slice(cap).forEach(w => { w._stashed = false; });
+    return true;
+  }
+  return false;
 }
 
 function spendMoney(amountCents) {
@@ -287,41 +440,71 @@ function spendMoney(amountCents) {
 }
 
 function defaultMountEquipment() {
-  return {
-    saddle: false,
-    saddlebags: 0,
-    rifleScabbard: false,
-    bridle: false,
-    stirrups: false,
-    arcaneWard: false,
-    ghostCoalLamp: false,
-    armorId: null,
-  };
+  const equipment = { armorId: null };
+  getMountGearCatalogItems().forEach(item => {
+    equipment[item.key] = isMountGearCounted(item) ? 0 : false;
+  });
+  return equipment;
 }
 
 function ensureMountEquipment() {
   if (!state.mount) return defaultMountEquipment();
   if (!state.mount.equipment || typeof state.mount.equipment !== "object") {
     state.mount.equipment = defaultMountEquipment();
-  } else {
-    state.mount.equipment = {
-      ...defaultMountEquipment(),
-      ...state.mount.equipment,
-    };
   }
-  state.mount.equipment.saddlebags = normalizeMountSaddlebagsCount(state.mount.equipment.saddlebags);
-  return state.mount.equipment;
+  // ВАЖНО: мутируем существующий объект на месте (не переприсваиваем новый),
+  // иначе ссылки, взятые ранее в этом же кадре, отвяжутся от state.mount.equipment.
+  const eq = state.mount.equipment;
+  if (eq.armorId === undefined) eq.armorId = null;
+  getMountGearCatalogItems().forEach(item => {
+    if (isMountGearCounted(item)) {
+      eq[item.key] = normalizeMountGearCount(eq[item.key], getMountGearMaxCount(item));
+    } else {
+      eq[item.key] = Boolean(eq[item.key]);
+    }
+  });
+  return eq;
 }
 
-function normalizeMountSaddlebagsCount(value) {
+function getMountGearCatalogItems() {
+  return MOUNT_GEAR_CATALOG.filter(item => item && item.key);
+}
+
+function getMountGearMaxCount(item) {
+  return Math.max(1, parseInt(String(item?.maxCount || 1), 10) || 1);
+}
+
+function isMountGearCounted(item) {
+  return getMountGearMaxCount(item) > 1;
+}
+
+function normalizeMountGearCount(value, maxCount = 1) {
   if (value === true) return 1;
   if (value === false || value === null || value === undefined) return 0;
-  return Math.max(0, Math.min(2, parseInt(String(value), 10) || 0));
+  return Math.max(0, Math.min(maxCount, parseInt(String(value), 10) || 0));
+}
+
+function getMountGearOwnedCount(equipment, item) {
+  if (isMountGearCounted(item)) {
+    return normalizeMountGearCount(equipment[item.key], getMountGearMaxCount(item));
+  }
+  return equipment[item.key] ? 1 : 0;
 }
 
 function getMountArmorCatalogItems() {
-  const armor = CATALOGS.armor || window.DEADLANDS_CATALOG_ARMOR || [];
-  return armor.filter(item => Array.isArray(item.sectors) && item.sectors.length === 0 && /лошад/i.test(item.name));
+  const mountArmor = (CATALOGS.mountArmor && CATALOGS.mountArmor.length ? CATALOGS.mountArmor : MOUNT_ARMOR_CATALOG) || [];
+  if (mountArmor.length) return mountArmor;
+  const legacyArmor = CATALOGS.armor || window.DEADLANDS_CATALOG_ARMOR || [];
+  return legacyArmor.filter(item => Array.isArray(item.sectors) && item.sectors.length === 0 && /лошад/i.test(item.name));
+}
+
+function resolveMountArmorById(id) {
+  if (!id) return null;
+  return window.CATALOG_BY_ID?.mountArmor?.[id]
+    || getMountArmorCatalogItems().find(item => item.id === id)
+    || window.CATALOG_BY_ID?.armor?.[id]
+    || (CATALOGS.armor || window.DEADLANDS_CATALOG_ARMOR || []).find(item => item.id === id)
+    || null;
 }
 
 function mountOptionStat(text, mod = "") {
@@ -334,11 +517,18 @@ function mountGearOptionNote(item, extra = "") {
   return parts.join(" · ");
 }
 
-function mountArmorOptionNote(item, requirement) {
+function mountArmorOptionNote(item) {
   return [
     mountOptionStat(`Броня +${item.bonus}`, "mount-option-stat--armor"),
-    mountOptionStat(`МС ${requirement.value}`, "mount-option-stat--strength"),
     mountOptionStat(`Вес ${formatMountNumber(item.weight)}`),
+    item.note ? item.note : "",
+  ].filter(Boolean).join(" · ");
+}
+
+function mountArmorEquipmentNote(item) {
+  return [
+    mountEquipmentStat(`Броня +${item.bonus}`, "mount-equipment-stat--armor"),
+    mountEquipmentStat(`Вес ${formatMountNumber(Number(item.weight) || 0)}`),
   ].join(" · ");
 }
 
@@ -346,97 +536,95 @@ function mountEquipmentStat(text, mod = "") {
   return `<span class="mount-equipment-stat${mod ? ` ${mod}` : ""}">${text}</span>`;
 }
 
+function getMountEquipmentGroup(item) {
+  if (item?.group) return item.group;
+  if (item?.kind === "armor") return "armor";
+  return "common";
+}
+
+// Возвращает уже купленный предмет из той же взаимоисключающей группы (кроме самого item)
+function getMountExclusiveOwner(group, exceptKey) {
+  if (!group) return null;
+  const eq = ensureMountEquipment();
+  return getMountGearCatalogItems().find(it =>
+    it.exclusiveGroup === group && it.key !== exceptKey && getMountGearOwnedCount(eq, it) > 0
+  ) || null;
+}
+
+// Лимит-группы: суммарное число предметов группы ограничено (напр. оберегов не более 2)
+const MOUNT_GEAR_LIMIT_GROUPS = { wards: 2 };
+
+function getMountLimitGroupMax(group) {
+  return MOUNT_GEAR_LIMIT_GROUPS[group] ?? Infinity;
+}
+
+function getMountLimitGroupCount(group) {
+  if (!group) return 0;
+  const eq = ensureMountEquipment();
+  return getMountGearCatalogItems().reduce(
+    (sum, it) => it.limitGroup === group ? sum + getMountGearOwnedCount(eq, it) : sum, 0
+  );
+}
+
+function getMountLimitGroupText(group) {
+  if (!group) return "";
+  const max = getMountLimitGroupMax(group);
+  if (!isFinite(max)) return "";
+  return `${getMountLimitGroupCount(group)}/${max}`;
+}
+
+function getMountMoneyCents() {
+  const dollars = parseInt(String(state.money || ""), 10) || 0;
+  const cents   = parseInt(String(state.moneyCents || ""), 10) || 0;
+  return dollars * 100 + cents;
+}
+
+function formatMountMoney(cents) {
+  const dollars = Math.floor(cents / 100);
+  const rest = cents % 100;
+  return rest ? `$ ${dollars}.${String(rest).padStart(2, "0")}` : `$ ${dollars}`;
+}
+
 function getMountEquipmentPurchaseOptions() {
   const equipment = ensureMountEquipment();
   const armorOwned = Boolean(equipment.armorId);
-  const baseOptions = [
-    {
-      key: "saddle",
+  const baseOptions = getMountGearCatalogItems().map(item => {
+    const ownedCount = getMountGearOwnedCount(equipment, item);
+    const maxCount = getMountGearMaxCount(item);
+    const counted = isMountGearCounted(item);
+    const ownedFull = ownedCount >= maxCount;
+    const exclusiveOwner = !ownedFull && item.exclusiveGroup ? getMountExclusiveOwner(item.exclusiveGroup, item.key) : null;
+    const limitFull = !ownedFull && !exclusiveOwner && item.limitGroup && ownedCount <= 0 &&
+      getMountLimitGroupCount(item.limitGroup) >= getMountLimitGroupMax(item.limitGroup);
+    const limitText = getMountLimitGroupText(item.limitGroup);
+    const noteExtra = [
+      counted ? `Можно до ${maxCount}` : "",
+      limitText ? `Лимит ${limitText}` : "",
+    ].filter(Boolean).join(" · ");
+    let lockedLabel = counted ? "Максимум" : "Уже есть";
+    if (ownedFull && limitText) lockedLabel = `Уже есть · Лимит ${limitText}`;
+    if (exclusiveOwner) lockedLabel = "Занято";
+    if (limitFull) lockedLabel = `Лимит ${limitText}`;
+    return {
+      key: item.key,
       type: "gear",
-      variant: "regular",
-      icon: "▣",
-      label: MOUNT_GEAR_ITEMS.saddle.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.saddle),
-      priceCents: MOUNT_GEAR_ITEMS.saddle.priceCents,
-      locked: equipment.saddle,
-      lockedLabel: "Уже есть",
-    },
-    {
-      key: "saddlebags",
-      type: "gear",
-      variant: "regular",
-      icon: "▤",
-      label: MOUNT_GEAR_ITEMS.saddlebags.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.saddlebags, "Можно до 2"),
-      priceCents: MOUNT_GEAR_ITEMS.saddlebags.priceCents,
-      locked: equipment.saddlebags >= 2,
-      lockedLabel: "Максимум",
-    },
-    {
-      key: "rifleScabbard",
-      type: "gear",
-      variant: "regular",
-      icon: "▭",
-      label: MOUNT_GEAR_ITEMS.rifleScabbard.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.rifleScabbard),
-      priceCents: MOUNT_GEAR_ITEMS.rifleScabbard.priceCents,
-      locked: equipment.rifleScabbard,
-      lockedLabel: "Уже есть",
-    },
-    {
-      key: "bridle",
-      type: "gear",
-      variant: "regular",
-      icon: "▥",
-      label: MOUNT_GEAR_ITEMS.bridle.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.bridle),
-      priceCents: MOUNT_GEAR_ITEMS.bridle.priceCents,
-      locked: equipment.bridle,
-      lockedLabel: "Уже есть",
-    },
-    {
-      key: "stirrups",
-      type: "gear",
-      variant: "regular",
-      icon: "▧",
-      label: MOUNT_GEAR_ITEMS.stirrups.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.stirrups),
-      priceCents: MOUNT_GEAR_ITEMS.stirrups.priceCents,
-      locked: equipment.stirrups,
-      lockedLabel: "Уже есть",
-    },
-    {
-      key: "arcaneWard",
-      type: "gear",
-      variant: "regular",
-      icon: "✦",
-      label: MOUNT_GEAR_ITEMS.arcaneWard.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.arcaneWard),
-      priceCents: MOUNT_GEAR_ITEMS.arcaneWard.priceCents,
-      locked: equipment.arcaneWard,
-      lockedLabel: "Уже есть",
-    },
-    {
-      key: "ghostCoalLamp",
-      type: "gear",
-      variant: "regular",
-      icon: "◉",
-      label: MOUNT_GEAR_ITEMS.ghostCoalLamp.name,
-      note: mountGearOptionNote(MOUNT_GEAR_ITEMS.ghostCoalLamp),
-      priceCents: MOUNT_GEAR_ITEMS.ghostCoalLamp.priceCents,
-      locked: equipment.ghostCoalLamp,
-      lockedLabel: "Уже есть",
-    },
-  ];
+      variant: getMountEquipmentGroup(item),
+      icon: item.icon || "▣",
+      label: item.name,
+      note: mountGearOptionNote(item, noteExtra),
+      priceCents: item.priceCents,
+      locked: ownedFull || Boolean(exclusiveOwner) || limitFull,
+      lockedLabel,
+    };
+  });
   const armorOptions = getMountArmorCatalogItems().map(item => {
-    const requirement = getMountArmorRequirement(item, getMountDefectItems());
     return {
       key: `armor:${item.id}`,
       type: "armor",
-      variant: "warhorse",
-      icon: "▰",
+      variant: "armor",
+      icon: item.icon || "▰",
       label: item.name,
-      note: mountArmorOptionNote(item, requirement),
+      note: mountArmorOptionNote(item),
       priceCents: parseMountPriceCents(item.price),
       armorId: item.id,
       locked: armorOwned,
@@ -447,47 +635,87 @@ function getMountEquipmentPurchaseOptions() {
 }
 
 function buyMountEquipment(option) {
-  if (!state.mount) return;
+  if (!state.mount) return false;
   const equipment = ensureMountEquipment();
-  if (option.type === "gear" && equipment[option.key]) {
-    if (option.key !== "saddlebags") {
-      showToast("Уже куплено");
-      return;
+  const gearItem = option.type === "gear" ? MOUNT_GEAR_ITEMS[option.key] : null;
+  if (option.type === "gear" && !gearItem) {
+    showToast("Предмет не найден");
+    return false;
+  }
+  if (option.type === "gear") {
+    const ownedCount = getMountGearOwnedCount(equipment, gearItem);
+    const maxCount = getMountGearMaxCount(gearItem);
+    if (ownedCount >= maxCount) {
+      showToast(isMountGearCounted(gearItem) ? "Достигнут максимум" : "Уже куплено");
+      return false;
     }
-    if (equipment.saddlebags >= 2) {
-      showToast("Больше двух седельных сумок нельзя");
-      return;
+    // Предмет может требовать наличия другого (напр. тайник требует седло)
+    if (gearItem.requires) {
+      const reqItem = MOUNT_GEAR_ITEMS[gearItem.requires];
+      if (reqItem && getMountGearOwnedCount(equipment, reqItem) <= 0) {
+        showToast(`Не куплено ${(reqItem.name || "").toLowerCase()}!`);
+        return false;
+      }
+    }
+    // Взаимоисключающая группа: можно держать только один предмет из группы
+    if (gearItem.exclusiveGroup) {
+      const owner = getMountExclusiveOwner(gearItem.exclusiveGroup, gearItem.key);
+      if (owner) {
+        showToast(`Уже выбрано: ${owner.name}`);
+        return false;
+      }
     }
   }
   if (option.type === "armor" && equipment.armorId) {
     showToast("У лошади уже есть броня");
-    return;
+    return false;
   }
   if (!spendMoney(option.priceCents)) {
     showToast("Не хватает средств!");
-    return;
+    return false;
   }
-  if (option.type === "gear" && option.key === "saddlebags") equipment.saddlebags += 1;
-  else if (option.type === "gear") equipment[option.key] = true;
+  if (option.type === "gear" && isMountGearCounted(gearItem)) {
+    equipment[option.key] = getMountGearOwnedCount(equipment, gearItem) + 1;
+  } else if (option.type === "gear") {
+    equipment[option.key] = true;
+  }
   if (option.type === "armor") equipment.armorId = option.armorId;
   hydrateInputs();
   renderMount();
+  refreshMountWeaponControls();
   scheduleSave();
-  closeMountModal();
+  updateMountMoneyBadges();
+  return true;
 }
 
 function removeMountEquipment(key) {
   if (!state.mount) return;
+  // Вытащить винтовку из чехла (вернуть персонажу)
+  if (typeof key === "string" && key.startsWith("stash:")) {
+    const idx = parseInt(key.slice(6), 10);
+    const w = (state.weapons || [])[idx];
+    if (w) w._stashed = false;
+    renderChoiceList("weapons");
+    renderMount();
+    recalculate();
+    scheduleSave();
+    return;
+  }
   const equipment = ensureMountEquipment();
-  if (key === "saddle") equipment.saddle = false;
-  if (key === "rifleScabbard") equipment.rifleScabbard = false;
-  if (key === "bridle") equipment.bridle = false;
-  if (key === "stirrups") equipment.stirrups = false;
-  if (key === "arcaneWard") equipment.arcaneWard = false;
-  if (key === "ghostCoalLamp") equipment.ghostCoalLamp = false;
-  if (key === "saddlebags") equipment.saddlebags = Math.max(0, equipment.saddlebags - 1);
   if (key === "armor") equipment.armorId = null;
+  else {
+    const item = MOUNT_GEAR_ITEMS[key];
+    if (item && isMountGearCounted(item)) {
+      equipment[key] = Math.max(0, getMountGearOwnedCount(equipment, item) - 1);
+    } else if (item) {
+      equipment[key] = false;
+    }
+  }
+  // Если чехлов стало меньше — лишние винтовки возвращаются персонажу
+  const popped = reconcileStashedRifles();
   renderMount();
+  if (popped) recalculate();
+  else refreshMountWeaponControls();
   scheduleSave();
 }
 
@@ -549,39 +777,107 @@ function getMountDefectItems() {
     .filter(Boolean);
 }
 
+function hasMountBlindness(defects = getMountDefectItems()) {
+  return defects.some(defect => defect.id === MOUNT_BLINDNESS_HINDRANCE_ID || defect.name === "Слепота");
+}
+
+function hasMountAging(defects = getMountDefectItems()) {
+  return defects.some(defect => defect.id === MOUNT_AGING_HINDRANCE_ID || defect.name === "Старость");
+}
+
+function resolveMountEdgeRef(ref) {
+  const catalog = CATALOGS.edges || window.DEADLANDS_CATALOGS?.edges || [];
+  if (!ref) return null;
+  if (typeof ref === "string") {
+    return window.CATALOG_BY_ID?.edges?.[ref] || catalog.find(edge => edge.id === ref || edge.name === ref) || null;
+  }
+  if (ref.id) return window.CATALOG_BY_ID?.edges?.[ref.id] || catalog.find(edge => edge.id === ref.id) || null;
+  return catalog.find(edge => edge.name === ref.name) || null;
+}
+
+function rollMountBlindnessEdgeId() {
+  const pool = MOUNT_BLINDNESS_EDGE_IDS
+    .map(id => resolveMountEdgeRef(id))
+    .filter(Boolean);
+  return _pickRandomUnique(pool, 1)[0]?.id || null;
+}
+
+function normalizeMountEdgeIds(defects = getMountDefectItems()) {
+  if (!state.mount) return [];
+  const prevKey = JSON.stringify(state.mount.edgeIds || []);
+  if (!hasMountBlindness(defects)) {
+    state.mount.edgeIds = [];
+    delete state.mount.edges;
+    if (prevKey !== "[]" && typeof scheduleSave === "function") scheduleSave();
+    return [];
+  }
+
+  const refs = Array.isArray(state.mount.edgeIds)
+    ? state.mount.edgeIds
+    : (Array.isArray(state.mount.edges) ? state.mount.edges : []);
+  let ids = refs
+    .map(ref => resolveMountEdgeRef(ref)?.id || null)
+    .filter(id => MOUNT_BLINDNESS_EDGE_IDS.includes(id));
+
+  if (ids.length === 0) {
+    const rolled = rollMountBlindnessEdgeId();
+    if (rolled) ids = [rolled];
+  } else {
+    ids = [ids[0]];
+  }
+
+  state.mount.edgeIds = ids;
+  delete state.mount.edges;
+  if (prevKey !== JSON.stringify(ids) && typeof scheduleSave === "function") scheduleSave();
+  return ids;
+}
+
+function getMountEdgeItems(defects = getMountDefectItems()) {
+  return normalizeMountEdgeIds(defects)
+    .map(id => resolveMountEdgeRef(id))
+    .filter(Boolean);
+}
+
+function hasMountEdge(id, defects) {
+  return getMountEdgeItems(defects).some(edge => edge.id === id);
+}
+
 function getMountEquipmentItems() {
   if (!state.mount) return [];
   const equipment = ensureMountEquipment();
   const items = [];
-  if (equipment.saddle) items.push({ ...MOUNT_GEAR_ITEMS.saddle, key: "saddle" });
-  if (equipment.rifleScabbard) items.push({ ...MOUNT_GEAR_ITEMS.rifleScabbard, key: "rifleScabbard" });
-  if (equipment.bridle) items.push({ ...MOUNT_GEAR_ITEMS.bridle, key: "bridle" });
-  if (equipment.stirrups) items.push({ ...MOUNT_GEAR_ITEMS.stirrups, key: "stirrups" });
-  if (equipment.arcaneWard) items.push({ ...MOUNT_GEAR_ITEMS.arcaneWard, key: "arcaneWard" });
-  if (equipment.ghostCoalLamp) items.push({ ...MOUNT_GEAR_ITEMS.ghostCoalLamp, key: "ghostCoalLamp" });
-  if (equipment.saddlebags > 0) {
-    items.push({
-      ...MOUNT_GEAR_ITEMS.saddlebags,
-      key: "saddlebags",
-      count: equipment.saddlebags,
-      weight: MOUNT_GEAR_ITEMS.saddlebags.weight * equipment.saddlebags,
-      name: equipment.saddlebags > 1 ? `${MOUNT_GEAR_ITEMS.saddlebags.name} x${equipment.saddlebags}` : MOUNT_GEAR_ITEMS.saddlebags.name,
-    });
-  }
+  getMountGearCatalogItems().forEach(item => {
+    const count = getMountGearOwnedCount(equipment, item);
+    if (count <= 0) return;
+    const entry = { ...item, key: item.key };
+    if (isMountGearCounted(item)) {
+      entry.count = count;
+      entry.weight = (Number(item.weight) || 0) * count;
+      entry.name = count > 1 ? `${item.name} x${count}` : item.name;
+    }
+    items.push(entry);
+  });
   if (equipment.armorId) {
-    const armor = window.CATALOG_BY_ID?.armor?.[equipment.armorId]
-      || (CATALOGS.armor || window.DEADLANDS_CATALOG_ARMOR || []).find(item => item.id === equipment.armorId);
-    if (armor) items.push({ ...armor, kind: "armor", key: "armor", priceCents: parseMountPriceCents(armor.price) });
+    const armor = resolveMountArmorById(equipment.armorId);
+    if (armor) items.push({ ...armor, kind: "armor", group: "armor", key: "armor", priceCents: parseMountPriceCents(armor.price) });
   }
+  // Винтовки, убранные в чехлы — их вес считается за лошадью
+  getStashedRifles().forEach(w => {
+    items.push({
+      name: w.name,
+      weight: Number(w.weight) || 0,
+      note: "Винтовка в чехле",
+      icon: "👜",
+      kind: "stash",
+      group: "common",
+      key: `stash:${state.weapons.indexOf(w)}`,
+    });
+  });
   return items;
 }
 
 function getMountCurrentLoad() {
   return getMountEquipmentItems().reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
-}
-
-function getMountArmorRequirementStepBonus(defects) {
-  return defects.some(defect => defect.name === "Полнота") ? 1 : 0;
 }
 
 function getMountLoadStats(definition, defects) {
@@ -593,34 +889,20 @@ function getMountLoadStats(definition, defects) {
       bonus += 60;
       notes.push("Полнота: Комфортная нагрузка +60");
     }
+    if (defect.name === "Коротышка") {
+      bonus -= 60;
+      notes.push("Коротышка: Комфортная нагрузка -60");
+    }
   });
-  const armorRequirementStepBonus = getMountArmorRequirementStepBonus(defects);
-  if (armorRequirementStepBonus) {
-    notes.push(`Полнота: требования брони +${armorRequirementStepBonus} ступень`);
+  if (hasMountEdge("e019", defects)) {
+    bonus += 60;
+    notes.push("Бугай: Комфортная нагрузка +60");
   }
   return {
     base,
     value: base + bonus,
     notes,
-    armorRequirementStepBonus,
   };
-}
-
-function getMountArmorRequirement(armor, defects) {
-  const baseIdx = mountArmorDieIndex(armor?.minStr);
-  const stepBonus = getMountArmorRequirementStepBonus(defects);
-  if (baseIdx < 0) return { base: armor?.minStr || "—", value: armor?.minStr || "—", stepBonus };
-  const idx = Math.max(0, Math.min(DICE_VALUES.length - 1, baseIdx + stepBonus));
-  return {
-    base: `d${DICE_VALUES[baseIdx]}`,
-    value: `d${DICE_VALUES[idx]}`,
-    stepBonus,
-  };
-}
-
-function mountArmorDieIndex(value) {
-  const match = String(value || "").match(/d(\d+)/i);
-  return match ? DICE_VALUES.indexOf(Number(match[1])) : -1;
 }
 
 function getMountIndicators(definition, defects) {
@@ -649,9 +931,32 @@ function getMountIndicators(definition, defects) {
     if (defect.name === "Коротышка") {
       add("toughness", -1, "Коротышка: Стойкость -1");
     }
+    if (defect.name === "Старость") {
+      add("pace", -1, "Старость: Шаг -1");
+    }
   });
+  const mountEdges = getMountEdgeItems(defects);
+  if (mountEdges.some(edge => edge.id === "e009")) {
+    add("parry", 1, "Блок: Защита +1");
+  }
+  if (mountEdges.some(edge => edge.id === "e089")) {
+    add("toughness", 1, "Тяжеловес: Стойкость +1");
+  }
 
-  const armor = getMountEquipmentItems().find(item => item.kind === "armor");
+  const loadStats = getMountLoadStats(definition, defects);
+  const currentLoad = getMountCurrentLoad();
+  if (isLoadOverLimit(currentLoad, loadStats.value)) {
+    add("pace", -1, "Перегруз: Шаг -1");
+    add("runDie", -1, "Перегруз: Бег -1 ступень");
+  }
+
+  const equipmentItems = getMountEquipmentItems();
+  if (equipmentItems.some(item => item.key === "windAmulet")) {
+    add("pace", 1, "Амулет Ветра: Шаг +1");
+    add("runDie", 1, "Амулет Ветра: Бег +1 ступень");
+  }
+
+  const armor = equipmentItems.find(item => item.kind === "armor");
   if (armor) {
     add("toughness", Number(armor.bonus) || 0, `${armor.name}: Стойкость +${Number(armor.bonus) || 0}`);
   }
@@ -718,6 +1023,7 @@ function renderMountEquipment(defects) {
   items.forEach(item => {
     const row = document.createElement("div");
     row.className = "mount-equipment-row";
+    row.classList.add(`mount-equipment-row--${getMountEquipmentGroup(item)}`);
 
     const main = document.createElement("div");
     main.className = "mount-equipment-main";
@@ -725,13 +1031,7 @@ function renderMountEquipment(defects) {
     name.textContent = item.name;
     const meta = document.createElement("span");
     if (item.kind === "armor") {
-      const requirement = getMountArmorRequirement(item, defects);
-      meta.innerHTML = [
-        mountEquipmentStat(`Броня +${item.bonus}`, "mount-equipment-stat--armor"),
-        mountEquipmentStat(`МС ${requirement.value}`, "mount-equipment-stat--strength"),
-        mountEquipmentStat(`Вес ${formatMountNumber(Number(item.weight) || 0)}`),
-      ].join(" · ");
-      if (requirement.stepBonus) meta.title = `База ${requirement.base}; Полнота +${requirement.stepBonus} ступень`;
+      meta.innerHTML = mountArmorEquipmentNote(item);
     } else {
       meta.innerHTML = mountEquipmentStat(`Вес ${formatMountNumber(Number(item.weight) || 0)}`);
     }
@@ -759,12 +1059,40 @@ function formatMountNumber(value) {
   return typeof trimNumber === "function" ? trimNumber(value) : String(Math.round(Number(value || 0) * 10) / 10);
 }
 
+function getMountFeatureTexts(definition, defects = getMountDefectItems()) {
+  const features = [...(definition.features || [])];
+  if (!(state.horseActive && state.mount)) return features;
+  const spurs = MOUNT_GEAR_ITEMS["horseSpurs"];
+  const hasSpurs = spurs && getMountGearOwnedCount(ensureMountEquipment(), spurs) > 0;
+  const hasHeavyweight = hasMountEdge("e089", defects);
+  const hoofDie = hasHeavyweight ? (hasSpurs ? "d8" : "d6") : (hasSpurs ? "d6" : "d4");
+  return features.map(text => String(text).replace(/Сила\+d[468]/g, `Сила+${hoofDie}`));
+}
+
+function getMountTraitText(definition, defects) {
+  let text = definition.traits || "";
+  if (!hasMountAging(defects)) return text;
+  if (definition.kind === "warhorse") {
+    return text
+      .replace("Сила d12+2", "Сила d12+1")
+      .replace("Выносливость d10", "Выносливость d8");
+  }
+  return text
+    .replace("Сила d12", "Сила d12-1")
+    .replace("Выносливость d8", "Выносливость d8-1");
+}
+
 function getMountHindrancePenalty(defect) {
   return defect.penaltyMount || defect.penalty;
 }
 
 function getMountHindranceBonus(defect) {
   return defect.bonusMount || defect.bonus;
+}
+
+function getMountEdgeText(definition, defects) {
+  const edgeNames = getMountEdgeItems(defects).map(edge => edge.name);
+  return [definition.edges, ...edgeNames].filter(Boolean).join(", ");
 }
 
 function getMountHindranceDescription(defect) {
@@ -807,23 +1135,24 @@ function renderMount() {
   const lead = document.querySelector('[data-output="mountLead"]');
   if (lead) lead.textContent = active ? definition.lead : MOUNT_VARIANTS.regular.lead;
 
+  const defects = getMountDefectItems();
+
   const traits = document.querySelector('[data-output="mountTraits"]');
-  if (traits) traits.textContent = definition.traits;
+  if (traits) traits.textContent = getMountTraitText(definition, defects);
 
   const skills = document.querySelector('[data-output="mountSkills"]');
   if (skills) skills.textContent = definition.skills;
 
-  const defects = getMountDefectItems();
   renderMountIndicators(definition, defects);
   renderMountEquipment(defects);
 
   const edges = document.querySelector('[data-output="mountEdges"]');
-  if (edges) edges.textContent = definition.edges;
+  if (edges) edges.textContent = getMountEdgeText(definition, defects);
 
   const features = document.querySelector('[data-output="mountFeatures"]');
   if (features) {
     features.replaceChildren();
-    definition.features.forEach(text => {
+    getMountFeatureTexts(definition, defects).forEach(text => {
       const li = document.createElement("li");
       li.innerHTML = text;
       features.append(li);
@@ -898,4 +1227,35 @@ function renderMount() {
     list.append(item);
   });
   card.append(title, list);
+
+  const bonusEdges = hasMountBlindness(defects) ? getMountEdgeItems(defects) : [];
+  if (bonusEdges.length > 0) {
+    const edgeTitle = document.createElement("div");
+    edgeTitle.className = "mount-card-title";
+    edgeTitle.textContent = "Черта";
+
+    const edgeList = document.createElement("div");
+    edgeList.className = "mount-hindrance-list";
+    bonusEdges.forEach(edge => {
+      const item = document.createElement("article");
+      item.className = "choice-card mount-edge-card";
+
+      const row = document.createElement("div");
+      row.className = "hindrance-name-row";
+      const name = document.createElement("strong");
+      name.textContent = edge.name;
+      const badge = document.createElement("span");
+      badge.className = "edge-rank-badge";
+      badge.textContent = edge.rank || "Черта";
+      row.append(name, badge);
+      item.append(row);
+
+      const description = document.createElement("p");
+      description.innerHTML = edge.effect || "";
+      item.append(description);
+      edgeList.append(item);
+    });
+
+    card.append(edgeTitle, edgeList);
+  }
 }

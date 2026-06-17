@@ -282,7 +282,10 @@
         <section class="paper table-panel">
           <div class="panel-head">
             <h2>Снаряжение</h2>
-            <button type="button" class="ghost" data-action="addGear">+</button>
+            <div class="panel-actions">
+              <button type="button" data-action="openPicker" data-type="gear">+ Добавить</button>
+              <button type="button" class="ghost" data-action="addGear">+</button>
+            </div>
           </div>
           <div class="money-line">
             <label class="load-meter-label"><span>Комфортная нагрузка</span><output data-output="weightTotal">0</output></label>
@@ -475,6 +478,7 @@
     <script src="js/catalogs/archetypeEdges.js"></script>
     <script src="js/catalogs/weapons.js"></script>
     <script src="js/catalogs/armor.js"></script>
+    <script src="js/catalogs/gear.js"></script>
     <script src="js/catalogs/mount.js"></script>
     <script src="js/catalogs/index.js"></script>
     <script src="js/constants.js"></script>

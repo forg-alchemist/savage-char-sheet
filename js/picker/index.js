@@ -1,6 +1,6 @@
 function openPickerModal(type) {
   const modal = document.getElementById("picker-modal");
-  const titles = { hindrances: "Изъяны", edges: "Черты и повышения", powers: "Силы", weapons: "Оружие", armor: "Броня" };
+  const titles = { hindrances: "Изъяны", edges: "Черты и повышения", powers: "Силы", weapons: "Оружие", armor: "Броня", gear: "Снаряжение" };
   modal.querySelector(".picker-title").textContent = titles[type] || type;
 
   const footer = document.getElementById("picker-footer");
@@ -23,7 +23,7 @@ function openPickerModal(type) {
 
   const moneyBadge = document.getElementById("picker-money-badge");
   if (moneyBadge) {
-    const hasMoneyBadge = type === "weapons" || type === "armor";
+    const hasMoneyBadge = type === "weapons" || type === "armor" || type === "gear";
     moneyBadge.hidden = !hasMoneyBadge;
     if (hasMoneyBadge) updatePickerMoneyBadge();
   }

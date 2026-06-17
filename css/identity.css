@@ -285,6 +285,36 @@
   border-right: 0;
 }
 
+.load-meter.over-budget {
+  min-height: 42px;
+}
+
+.load-meter.over-budget .load-meter-segment {
+  top: 16px;
+  font-size: 0.62rem;
+}
+
+.load-overload-badge {
+  position: absolute;
+  z-index: 2;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 9px;
+  border: 1px solid rgba(255,210,150,0.45);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #b41410 0%, #7d110d 100%);
+  color: #fff2d8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .load-meter.at-limit .load-meter-fill {
   width: 100%;
 }

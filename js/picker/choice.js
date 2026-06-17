@@ -44,7 +44,7 @@ function renderChoiceList(type) {
     remove.textContent = "×";
     if (type === "hindrances" && state.hindrancesDone && !state.marshalMode) remove.hidden = true;
     if (type === "edges" && state.edgesDone && !state.marshalMode) remove.hidden = true;
-    if (type === "powers" && state.powersDone && !state.marshalMode) remove.hidden = true;
+    if (type === "powers" && arePowersLocked()) remove.hidden = true;
     if (type === "powers" && item._arcaneGift) remove.hidden = true;
     remove.addEventListener("click", () => {
       const removedItem = state[targetKey][index];
@@ -141,9 +141,10 @@ function renderChoiceList(type) {
       psBadge.className = "power-ps-badge";
       psBadge.textContent = `${getPowerPoints(item)} ПС`;
 
+      const powerParts = getPowerDisplayParts(item);
       const rangeLine = document.createElement("div");
       rangeLine.className = "picker-item-stat";
-      rangeLine.textContent = `Дистанция: ${item.range}`;
+      rangeLine.textContent = `Дистанция: ${powerParts.range}`;
 
       const durationLine = document.createElement("div");
       durationLine.className = "picker-item-stat";
@@ -198,7 +199,7 @@ function renderWeaponList(root, weapons) {
 
   const header = document.createElement("div");
   header.className = "weapon-row weapon-row-header";
-  ["Название", "Дистанция", "Урон", "ББ", "Обойма", "Режим", "МС", "Цена", "Вес", "Примечания", ""].forEach((label) => {
+  ["Название", "Дистанция", "Урон", "ББ", "Обойма", "Режим", "МС", "Цена", "Вес", "Примечания", "", "", ""].forEach((label) => {
     const cell = document.createElement("span");
     cell.textContent = label;
     header.append(cell);
@@ -213,6 +214,7 @@ function renderWeaponList(root, weapons) {
   weapons.forEach((item, index) => {
     const row = document.createElement("div");
     row.className = "weapon-row weapon-row-data";
+    if (item._stashed) row.classList.add("weapon-row-data--stashed");
 
     [item.name, item.range, item.damage, item.ap, item.magazine, item.mode, item.mc, item.price, item.weight, item.notes].forEach((val, i) => {
       const cell = document.createElement("span");
@@ -229,8 +231,38 @@ function renderWeaponList(root, weapons) {
       row.append(cell);
     });
 
+    // Распорка — толкает кнопки вправо, значения остаются у названия
+    row.append(document.createElement("span"));
+
+    // Чехол для винтовки: убрать/вытащить (только для винтовок при наличии чехла);
+    // иначе — пустая ячейка для выравнивания грида
+    const rifleSlots = typeof getRifleSlotCount === "function"
+      ? getRifleSlotCount()
+      : (typeof getScabbardCount === "function" ? getScabbardCount() : 0);
+    const canScabbard = typeof isRifleWeapon === "function" && isRifleWeapon(item) && rifleSlots > 0;
+    if (canScabbard && item._stashed) {
+      const stashBtn = document.createElement("button");
+      stashBtn.type = "button";
+      stashBtn.className = "weapon-stash-btn weapon-stash-btn--on";
+      stashBtn.textContent = "Вытащить";
+      stashBtn.title = "Вытащить винтовку из чехла";
+      stashBtn.addEventListener("click", () => unstashRifle(item));
+      row.append(stashBtn);
+    } else if (canScabbard && canStashRifle()) {
+      const stashBtn = document.createElement("button");
+      stashBtn.type = "button";
+      stashBtn.className = "weapon-stash-btn";
+      stashBtn.textContent = "В чехол";
+      stashBtn.title = "Убрать винтовку в чехол на лошади";
+      stashBtn.addEventListener("click", () => stashRifle(item));
+      row.append(stashBtn);
+    } else {
+      row.append(document.createElement("span"));
+    }
+
     const btn = document.createElement("button");
     btn.type = "button";
+    btn.className = "weapon-remove-btn";
     btn.textContent = "×";
     btn.addEventListener("click", () => {
       state.weapons.splice(index, 1);
@@ -256,7 +288,7 @@ function renderArmorList(root, armor) {
 
   const header = document.createElement("div");
   header.className = "armor-row armor-row-header";
-  ["Предмет", "Броня", "Мин. Сила", "Вес, кг", "Цена", "", "", ""].forEach((label) => {
+  ["Предмет", "Секторы", "Броня", "МС", "Вес, кг", "Цена", "", "", ""].forEach((label) => {
     const cell = document.createElement("span");
     cell.textContent = label;
     header.append(cell);
@@ -268,9 +300,14 @@ function renderArmorList(root, armor) {
     row.className = "armor-row armor-row-data";
     if (item._equipped) row.classList.add("armor-row-data--worn");
 
-    [item.name, `+${item.bonus}`, item.minStr, item.weight, item.price].forEach((val, i) => {
+    [item.name, formatArmorSectors(item), `+${item.bonus}`, item.minStr, item.weight, item.price].forEach((val, i) => {
       const cell = document.createElement("span");
-      cell.className = i === 0 ? "armor-cell-name" : "";
+      cell.className = [
+        i === 0 ? "armor-cell-name" : "",
+        i === 1 ? "armor-cell-sectors" : "",
+        i === 2 ? "armor-cell-bonus" : "",
+        i === 3 ? "armor-cell-strength" : "",
+      ].filter(Boolean).join(" ");
       cell.textContent = val ?? "—";
       row.append(cell);
     });

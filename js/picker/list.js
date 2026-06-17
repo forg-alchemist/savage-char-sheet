@@ -60,6 +60,34 @@ function _hideWeaponNav() {
   if (el) el.hidden = true;
 }
 
+function buyGearCatalogItem(item) {
+  const cost = typeof _parseWeaponCostCents === "function"
+    ? _parseWeaponCostCents(item.price)
+    : null;
+
+  if (cost > 0) {
+    if (typeof spendMoney !== "function" || !spendMoney(cost)) {
+      showToast("Не хватает средств!");
+      return;
+    }
+  }
+
+  if (!state.gear) state.gear = [];
+  state.gear.push({
+    id: item.id,
+    _source: "catalog",
+    name: item.name,
+    notes: item.notes || item.description || "",
+    price: item.price || "",
+    weight: Number(item.weight) || 0,
+  });
+
+  updatePickerMoneyBadge();
+  renderEntries("gear");
+  recalculate();
+  scheduleSave();
+}
+
 function renderPickerList(type, query) {
   const list = document.querySelector(".picker-list");
   const targetKey = getCatalogStateKey(type);
@@ -193,7 +221,7 @@ function renderPickerList(type, query) {
     const isMultiPickEdge = type === "edges" && !!item.multiPick;
     const isKungfuSub = type === "edges" && KUNGFU_SUB_PARENTS.has(item.name);
     const kungfuSubCount = isKungfuSub ? selectedKungfuSubEdges(item.name).length : 0;
-    const isSelected = type !== "weapons" && type !== "armor" && (
+    const isSelected = type !== "weapons" && type !== "armor" && type !== "gear" && (
       selectedKeys.has(catalogKey(item, type)) ||
       (isPrimataMainEdge && !!selectedPrimataSubEdge()) ||
       (isKungfuSub && kungfuSubCount > 0)
@@ -267,8 +295,19 @@ function renderPickerList(type, query) {
 
     if (type === "armor") {
       const stats = document.createElement("div");
-      stats.className = "picker-item-desc";
-      stats.textContent = `Броня: +${item.bonus} · Мин. сила: ${item.minStr} · Вес: ${item.weight} кг · Цена: ${item.price}`;
+      stats.className = "picker-item-desc picker-armor-stats";
+      [
+        ["armor", "Броня", `+${item.bonus}`],
+        ["sectors", "Секторы", formatArmorSectors(item)],
+        ["strength", "МС", item.minStr],
+        ["weight", "Вес", `${item.weight} кг`],
+        ["price", "Цена", item.price],
+      ].forEach(([mod, label, value]) => {
+        const stat = document.createElement("span");
+        stat.className = `picker-armor-stat picker-armor-stat--${mod}`;
+        stat.textContent = `${label}: ${value}`;
+        stats.append(stat);
+      });
       info.append(stats);
     }
 
@@ -326,9 +365,10 @@ function renderPickerList(type, query) {
       psBadge.className = "power-ps-badge";
       psBadge.textContent = `${getPowerPoints(item)} ПС`;
 
+      const powerParts = getPowerDisplayParts(item);
       const rangeLine = document.createElement("div");
       rangeLine.className = "picker-item-stat";
-      rangeLine.textContent = `Дистанция: ${item.range}`;
+      rangeLine.textContent = `Дистанция: ${powerParts.range}`;
 
       const durationLine = document.createElement("div");
       durationLine.className = "picker-item-stat";
@@ -507,8 +547,8 @@ function renderPickerList(type, query) {
             state[targetKey].push({ ...item, count: 1 });
             pruneInvalidEdges();
             syncArcaneFreePoers();
-            renderChoiceList("powers");
           }
+          renderChoiceList("powers");
           renderChoiceList("edges");
           recalculate();
           scheduleSave();
@@ -536,7 +576,7 @@ function renderPickerList(type, query) {
         return;
       }
 
-      if (type !== "weapons" && selectedKeys.has(key)) {
+      if (type !== "weapons" && type !== "gear" && selectedKeys.has(key)) {
         const idx = state[targetKey].findIndex((s) => catalogKey(s, type) === key);
         if (idx !== -1) state[targetKey].splice(idx, 1);
         if (type === "powers" && SUB_POWER_PARENTS.includes(item.name)) {
@@ -585,14 +625,7 @@ function renderPickerList(type, query) {
         }
       }
       if (type === "powers" && !state.marshalMode) {
-        let silyMax = 0;
-        (state.selectedEdges || []).forEach(e => {
-          const stats = (e.id && window.ARCANE_GIFT_STATS_BY_ID?.[e.id]) ?? ARCANE_GIFT_STATS?.[e.name];
-          if (stats) silyMax += stats.sily;
-          if (e.id === window.WK_EDGES?.SILY || e.name === "Новые силы") silyMax += 2 * (e.count || 1);
-        });
-        const nonSubCount = (state.selectedPowers || []).filter(p => !isSubPower(p) && !p._arcaneGift).length;
-        if (nonSubCount >= silyMax) {
+        if (isPowersAtMax()) {
           showToast("Достигнут максимум сил");
           return;
         }
@@ -653,6 +686,10 @@ function renderPickerList(type, query) {
           recalculate();
           scheduleSave();
         });
+        return;
+      }
+      if (type === "gear") {
+        buyGearCatalogItem(item);
         return;
       }
       state[targetKey].push(item);

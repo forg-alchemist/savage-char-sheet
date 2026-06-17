@@ -257,7 +257,7 @@ function bindStaticControls() {
       }
       if (type === "hindrances" && state.hindrancesDone && !state.marshalMode) return;
       if (type === "edges" && state.edgesDone && !state.marshalMode && state.advancePending?.type !== "edge") return;
-      if (type === "powers" && state.powersDone && !state.marshalMode && isPowersAtMax()) return;
+      if (type === "powers" && arePowersLocked()) return;
       openPickerModal(type);
     }
     if (action === "closePicker") closePickerModal();
@@ -612,13 +612,14 @@ function recalculate() {
   const hasBugai   = _hasEdge(WKE.BUGAI,     "Бугай");
   const toughness = Math.floor(vigor / 2) + 2
     + (isHarrowed ? 2 : 0) - (isShort ? 1 : 0) + (isPolnota ? 1 : 0);
-  const weaponWeight = (state.weapons || []).reduce((sum, w) => sum + (Number(w.weight) || 0), 0);
+  const weaponWeight = (state.weapons || []).reduce((sum, w) => sum + (w._stashed ? 0 : (Number(w.weight) || 0)), 0);
   const armorWeight = (state.selectedArmor || []).reduce((sum, a) => sum + (Number(a.weight) || 0), 0);
   const weight = state.gear.reduce((sum, item) => sum + (Number(item.weight) || 0), 0) + weaponWeight + armorWeight;
   const strengthIdx = DICE_VALUES.indexOf(strength);
   const loadStrengthIdx = Math.max(0, Math.min(DICE_VALUES.length - 1, strengthIdx + (hasBugai ? 1 : 0)));
   const sizeLoadModifier = (isPolnota ? 1 : 0) - (isShort ? 1 : 0);
   const loadLimit = DICE_VALUES[loadStrengthIdx] * 5 * Math.pow(2, sizeLoadModifier);
+  const isOverloaded = isLoadOverLimit(weight, loadLimit);
 
   const total = getTotalSkillSpend();
   const budget = state.skillBudgetMax ?? 12;
@@ -657,8 +658,8 @@ function recalculate() {
     : (state.selectedHindrances || []).some(h => h.name === "Хромота" && h.degree === "Крупный");
   const hasFastfoot  = _hasEdge(WKE.FASTFOOT, "Быстроногость");
   const paceBonus   = hasFastfoot ? 1 : 0;
-  const pacePenalty = (isPolnota ? 1 : 0) + (hromoaMinor ? 1 : 0) + (hromotaMajor ? 2 : 0);
-  const runPenalty  = (isPolnota || hromoaMinor || hromotaMajor) ? 1 : 0;
+  const pacePenalty = (isPolnota ? 1 : 0) + (hromoaMinor ? 1 : 0) + (hromotaMajor ? 2 : 0) + (isOverloaded ? 1 : 0);
+  const runPenalty  = ((isPolnota || hromoaMinor || hromotaMajor) ? 1 : 0) + (isOverloaded ? 1 : 0);
   const runBase = RUN_DICE.indexOf("d4"); // = 1
   const runDieIdx = Math.max(0, Math.min(RUN_DICE.length - 1, runBase + paceBonus - runPenalty));
   setOutput("pace", Math.max(1, 3 + paceBonus - pacePenalty));
@@ -697,6 +698,7 @@ function recalculate() {
   syncMoneyGrants();
   renderTraitBoard();
   renderMount();
+  updatePowersLock();
 }
 
 // ── Money grants ──────────────────────────────────────────────────────────────
@@ -784,21 +786,10 @@ function updateEdgeLock() {
   addBtn.classList.toggle("locked-btn", locked);
 }
 
-function isPowersAtMax() {
-  let silyMax = 0;
-  (state.selectedEdges || []).forEach(e => {
-    const stats = (e.id && window.ARCANE_GIFT_STATS_BY_ID?.[e.id]) ?? ARCANE_GIFT_STATS?.[e.name];
-    if (stats) silyMax += stats.sily;
-    if (e.id === window.WK_EDGES?.SILY || e.name === "Новые силы") silyMax += 2 * (e.count || 1);
-  });
-  const nonSubCount = (state.selectedPowers || []).filter(p => !isSubPower(p) && !p._arcaneGift).length;
-  return nonSubCount >= silyMax;
-}
-
 function updatePowersLock() {
   const addBtn = document.querySelector('[data-action="openPicker"][data-type="powers"]');
   if (!addBtn) return;
-  const locked = state.powersDone && !state.marshalMode && isPowersAtMax();
+  const locked = arePowersLocked();
   addBtn.textContent = locked ? "Силы зафиксированы" : "+ Добавить";
   addBtn.disabled = locked;
   addBtn.classList.toggle("locked-btn", locked);
@@ -852,12 +843,81 @@ function renderArt() {
 
 // ── Gear entries ──────────────────────────────────────────────────────────────
 
+function isCatalogGearEntry(entry) {
+  return !!entry && (entry._source === "catalog" || (entry.id && window.CATALOG_BY_ID?.gear?.[entry.id]));
+}
+
+function getGearEntryDisplay(entry) {
+  const def = (entry.id && window.CATALOG_BY_ID?.gear?.[entry.id]) || {};
+  return {
+    name: entry.name || def.name || "",
+    notes: entry.notes || def.notes || def.description || "",
+    price: entry.price || def.price || "",
+    weight: entry.weight ?? def.weight ?? 0,
+  };
+}
+
+function renderCatalogGearEntry(entry, index) {
+  const data = getGearEntryDisplay(entry);
+  const card = document.createElement("article");
+  card.className = "gear-catalog-card";
+
+  const main = document.createElement("div");
+  main.className = "gear-catalog-main";
+
+  const title = document.createElement("strong");
+  title.className = "gear-catalog-title";
+  title.textContent = data.name;
+  main.append(title);
+
+  const meta = document.createElement("div");
+  meta.className = "gear-catalog-meta";
+  if (data.price) {
+    const price = document.createElement("span");
+    price.className = "gear-catalog-price";
+    price.textContent = `Цена ${data.price}`;
+    meta.append(price);
+  }
+  if (data.weight !== undefined && data.weight !== null && data.weight !== "") {
+    const weight = document.createElement("span");
+    weight.className = "gear-catalog-weight";
+    weight.textContent = `Вес ${data.weight}`;
+    meta.append(weight);
+  }
+  if (meta.childElementCount) main.append(meta);
+
+  if (data.notes) {
+    const notes = document.createElement("p");
+    notes.className = "gear-catalog-notes";
+    notes.textContent = data.notes;
+    main.append(notes);
+  }
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.textContent = "×";
+  remove.addEventListener("click", () => {
+    state.gear.splice(index, 1);
+    renderEntries("gear");
+    recalculate();
+    scheduleSave();
+  });
+
+  card.append(main, remove);
+  return card;
+}
+
 function renderEntries(type) {
   const root = document.querySelector(`[data-list="${type}"]`);
   const template = document.querySelector(`#${type === "weapons" ? "weapon" : "gear"}-template`);
   root.replaceChildren();
 
   state[type].forEach((entry, index) => {
+    if (type === "gear" && isCatalogGearEntry(entry)) {
+      root.append(renderCatalogGearEntry(entry, index));
+      return;
+    }
+
     const node = template.content.firstElementChild.cloneNode(true);
     node.querySelectorAll("[data-field]").forEach((input) => {
       const field = input.dataset.field;

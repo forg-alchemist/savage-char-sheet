@@ -129,7 +129,7 @@ function _addSpiritPower(spiritName) {
     ? window.CATALOG_BY_ID?.powers?.[spiritId]
     : (CATALOGS.powers || []).find(p => p.name === spiritName);
   if (!cat) { showToast("Нет карточки этого духа"); return; }
-  if (!state.marshalMode && computeCurrentSily() >= computeMaxSily()) {
+  if (!state.marshalMode && isPowersAtMax()) {
     showToast("ДОСТИГНУТ ЛИМИТ СИЛ");
     return;
   }

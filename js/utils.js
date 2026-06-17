@@ -37,12 +37,16 @@ function setOutput(name, value) {
   if (element) element.textContent = value;
 }
 
+function isLoadOverLimit(weight, loadLimit) {
+  return (Number(weight) || 0) - (Number(loadLimit) || 0) > 0.0001;
+}
+
 function renderLoadMeter(element, weight, loadLimit) {
   if (!element) return;
   const used = Math.max(0, Number(weight) || 0);
   const limit = Math.max(0, Number(loadLimit) || 0);
   const remaining = limit - used;
-  const isOverLimit = remaining < -0.0001;
+  const isOverLimit = isLoadOverLimit(used, limit);
   const isAtLimit = Math.abs(remaining) <= 0.0001 && limit > 0;
   const fill = limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : (used > 0 ? 100 : 0);
   const fillRounded = Math.round(fill * 10) / 10;
@@ -52,17 +56,22 @@ function renderLoadMeter(element, weight, loadLimit) {
   const usedLabel = used > 0.0001
     ? `<span class="load-meter-segment load-meter-segment--used">ВЕС ${usedText}</span>`
     : "";
+  const overloadLabel = isOverLimit
+    ? `<span class="load-overload-badge">ПЕРЕГРУЗ!</span>`
+    : "";
 
   element.classList.add("load-meter");
   element.classList.toggle("is-empty", used <= 0.0001);
   element.classList.toggle("over-budget", isOverLimit);
   element.classList.toggle("at-limit", isAtLimit);
   element.style.setProperty("--load-fill", `${fillRounded}%`);
-  element.dataset.tooltip = `Вес: ${usedText}. Остаток: ${remainingText}. Комфортная нагрузка: ${limitText}.`;
+  element.dataset.tooltip = `Вес: ${usedText}. Остаток: ${remainingText}. Комфортная нагрузка: ${limitText}.`
+    + (isOverLimit ? " Перегруз: Шаг -1, Бег -1 ступень." : "");
   element.innerHTML = `
     <span class="load-meter-fill" aria-hidden="true"></span>
     ${usedLabel}
     <span class="load-meter-segment load-meter-segment--free">ОСТАТОК ${remainingText}</span>
+    ${overloadLabel}
   `;
 }
 
