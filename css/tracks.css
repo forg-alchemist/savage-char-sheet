@@ -15,6 +15,40 @@
 .resolve h2 { display: grid; height: 100%; min-height: 188px; place-items: center; padding: 8px 0; color: #fff8ee; background: var(--red); writing-mode: vertical-rl; }
 .resolve h2:first-child { transform: rotate(180deg); }
 
+.advance-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.advance-remove-btn {
+  width: min(142px, 100%);
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid rgba(212, 175, 55, 0.62);
+  border-radius: 4px;
+  background: #2a1711;
+  color: #f2d46b;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(31, 23, 18, 0.24);
+}
+
+.advance-remove-btn:hover {
+  background: #3b1d13;
+  border-color: rgba(242, 212, 107, 0.9);
+  color: #fff0a4;
+}
+
+.advance-remove-btn[hidden] { display: none; }
+
 .advance-track {
   --advance-track-size: min(clamp(96px, 9.5vw, 124px), 100%);
   --advance-token-size: clamp(64px, 6.2vw, 82px);

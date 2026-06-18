@@ -2,10 +2,292 @@
 
 let _advCurrentIndex = null;
 let _advRollbackFn   = null;
+let _advRollbackSnapshot = null;
 let _hindranceAdvanceContext = null;
 
-function openAdvanceModal(index, rollbackFn) {
+const ADVANCE_HISTORY_LIMIT = 20;
+const ADVANCE_SNAPSHOT_ARRAY_KEYS = [
+  "selectedHindrances",
+  "selectedEdges",
+  "selectedPowers",
+  "skills",
+  "weapons",
+  "selectedArmor",
+  "gear",
+  "advancesTrack",
+  "advanceChoices",
+  "advanceHistory",
+  "wounds",
+  "fatigue",
+  "resolve",
+];
+
+function ensureAdvanceHistory() {
+  if (!Array.isArray(state.advanceHistory)) state.advanceHistory = [];
+  return state.advanceHistory;
+}
+
+function createAdvanceRollbackSnapshot() {
+  const snapshot = structuredClone(state);
+  delete snapshot.artData; // portrait is stored separately and should not bloat rollback history
+  snapshot.advancePending = null;
+  return snapshot;
+}
+
+function _advanceChoiceLabel(choice) {
+  return ({
+    edge: "Новая черта",
+    skill1: "Навык выше или равный характеристике",
+    skill2: "Два навыка ниже характеристики",
+    attribute: "Характеристика",
+    hindrance: "Уменьшение / удаление изъяна",
+  })[choice] || "Повышение";
+}
+
+function _recordAdvanceHistory(context, choice) {
+  if (!context?.snapshot) return null;
+  const history = ensureAdvanceHistory();
+  const entry = {
+    id: `adv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    at: new Date().toISOString(),
+    choice,
+    label: _advanceChoiceLabel(choice),
+    index: context.index,
+    snapshot: context.snapshot,
+  };
+  history.push(entry);
+  while (history.length > ADVANCE_HISTORY_LIMIT) history.shift();
+  context.historyId = entry.id;
+  updateAdvanceRollbackButton();
+  return entry;
+}
+
+function _discardAdvanceHistoryEntry(context) {
+  if (!context?.historyId || !Array.isArray(state.advanceHistory)) return;
+  state.advanceHistory = state.advanceHistory.filter(entry => entry.id !== context.historyId);
+  updateAdvanceRollbackButton();
+}
+
+function _runIfFunction(name, ...args) {
+  const fn = window[name] || globalThis[name];
+  if (typeof fn === "function") fn(...args);
+}
+
+function _restoreAdvanceSnapshot(snapshot) {
+  const currentArt = state.artData || "";
+  const keepMarshalMode = !!state.marshalMode;
+  const keepMarshalEditTime = state.marshalEditTime;
+  const snapshotCopy = structuredClone(snapshot || {});
+
+  state = mergeState(DEFAULT_STATE, snapshotCopy);
+  for (const key of ADVANCE_SNAPSHOT_ARRAY_KEYS) {
+    if (Array.isArray(snapshotCopy[key])) state[key] = structuredClone(snapshotCopy[key]);
+  }
+  state.artData = currentArt;
+  state.marshalMode = keepMarshalMode;
+  state.marshalEditTime = keepMarshalEditTime;
+  state.advancePending = null;
+
+  if (!state.skills || state.skills.length === 0) state.skills = makeDefaultSkills();
+  ensureTraitModel();
+  _runIfFunction("removeUnsupportedSkills");
+  _runIfFunction("migrateWeapons");
+  _runIfFunction("pruneNonCharacterArmor");
+  _runIfFunction("reconcileSkillStartSpend");
+  _runIfFunction("reconcileHarrowed");
+  _runIfFunction("syncSubPowers");
+  _runIfFunction("syncArcaneFreePoers");
+
+  commitSheetUpdate({
+    hydrate: true,
+    renderGear: true,
+    renderTracks: true,
+    renderCatalogPickers: true,
+    renderChoices: ["hindrances", "edges", "powers", "weapons", "armor"],
+    renderArt: true,
+    renderMount: true,
+    updateSkillBuy: true,
+    updateRank: true,
+    updateDeal: true,
+    updateJoker: true,
+    updateMarshal: true,
+    updateHarrowed: true,
+    updateLocks: ["hindrances", "edges", "powers"],
+  });
+}
+
+function rollbackLastAdvance() {
+  if (!state.marshalMode) return;
+  const history = ensureAdvanceHistory();
+  const entry = history[history.length - 1];
+  if (!entry?.snapshot) {
+    _refundAdvancePoint(_lastRefundableAdvancePoint());
+    return;
+  }
+
+  showConfirm(
+    `Откатить последнее повышение: ${entry.label || "Повышение"}? Карта вернётся в состояние до него.`,
+    () => {
+      _restoreAdvanceSnapshot(entry.snapshot);
+      showToast("Повышение откачено");
+    }
+  );
+}
+
+function _lastRefundableAdvancePoint() {
+  const track = Array.isArray(state.advancesTrack) ? state.advancesTrack : [];
+  for (let i = track.length - 1; i >= 0; i--) {
+    if (track[i]) return { kind: "track", index: i };
+  }
+
+  const choices = Array.isArray(state.advanceChoices) ? state.advanceChoices : [];
+  for (let i = choices.length - 1; i >= 0; i--) {
+    if (choices[i]) return { kind: "choice", index: i };
+  }
+  return null;
+}
+
+function hasRefundableAdvancePoint() {
+  return Boolean(_lastRefundableAdvancePoint());
+}
+
+function _rollbackManualHindranceProgress() {
+  const hindrances = Array.isArray(state.selectedHindrances) ? state.selectedHindrances : [];
+  for (let i = hindrances.length - 1; i >= 0; i--) {
+    const h = hindrances[i];
+    if ((h?._reduceProgress || 0) > 0) {
+      delete h._reduceProgress;
+      return true;
+    }
+  }
+  return false;
+}
+
+function _refundAdvancePoint(point) {
+  if (!state.marshalMode) return;
+  if (!point) {
+    showToast("Нет повышений, которые можно вернуть вручную");
+    return;
+  }
+
+  showConfirm(
+    "Вернуть очко повышения? Маршал должен заранее вручную снять с персонажа навык, характеристику или другой эффект этого повышения. Текущая стоимость навыков будет пересчитана.",
+    () => {
+      const choice = Array.isArray(state.advanceChoices)
+        ? state.advanceChoices[point.index]
+        : null;
+      if (choice === "hindrance") _rollbackManualHindranceProgress();
+
+      if (point.kind === "track") {
+        state.advancesTrack[point.index] = false;
+        if (Array.isArray(state.advanceChoices) && point.index < state.advanceChoices.length) {
+          state.advanceChoices[point.index] = null;
+        }
+      } else if (Array.isArray(state.advanceChoices)) {
+        state.advanceChoices.splice(point.index, 1);
+      }
+
+      if (Array.isArray(state.advanceHistory) && state.advanceHistory.length > 0) {
+        state.advanceHistory.pop();
+      }
+
+      state.advancePending = null;
+      cementSkillStartSpend({ refresh: true });
+      commitSheetUpdate({
+        renderTracks: true,
+        renderTraits: true,
+        renderCatalogPickers: true,
+        updateMarshal: true,
+      });
+      showToast("Очко повышения возвращено");
+    }
+  );
+}
+
+function refundLastAdvancePoint() {
+  _refundAdvancePoint(_lastRefundableAdvancePoint());
+}
+
+function refundAdvancePointAt(index) {
+  _refundAdvancePoint({ kind: "track", index });
+}
+
+function openSkillBudgetEditModal() {
+  if (!state.marshalMode) return;
+  document.querySelector(".skillbudget-modal")?.remove();
+
+  const modal = document.createElement("div");
+  modal.className = "addcash-modal skillbudget-modal";
+  const close = () => modal.remove();
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "addcash-backdrop";
+  backdrop.addEventListener("click", close);
+
+  const dialog = document.createElement("div");
+  dialog.className = "addcash-dialog paper";
+  dialog.innerHTML = `
+    <div class="addcash-header">
+      <div class="addcash-eyebrow">Маршал</div>
+      <h3 class="addcash-title">Навыки</h3>
+      <button type="button" class="addcash-close">×</button>
+    </div>
+    <div class="addcash-fields skillbudget-fields">
+      <label class="skillbudget-field">
+        <span>Максимум очков навыков</span>
+        <input type="number" min="0" step="1" class="skillbudget-input">
+      </label>
+    </div>
+    <div class="addcash-actions skillbudget-actions">
+      <button type="button" class="addcash-submit addcash-submit--add">Сохранить</button>
+    </div>`;
+
+  const input = dialog.querySelector(".skillbudget-input");
+  input.value = String(state.skillBudgetMax ?? 12);
+
+  const save = () => {
+    const value = parseInt(input.value, 10);
+    if (!Number.isFinite(value) || value < 0) {
+      showToast("Введите число 0 или больше");
+      return;
+    }
+    state.skillBudgetMax = value;
+    close();
+    commitSheetUpdate({ renderTraits: true, updateSkillBuy: true, updateMarshal: true });
+    showToast("Максимум навыков обновлён");
+  };
+
+  dialog.querySelector(".addcash-close").addEventListener("click", close);
+  dialog.querySelector(".addcash-submit--add").addEventListener("click", save);
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); save(); }
+    if (e.key === "Escape") close();
+  });
+
+  modal.append(backdrop, dialog);
+  document.body.append(modal);
+  setTimeout(() => input.focus(), 0);
+}
+
+function updateAdvanceRollbackButton() {
+  const rollbackBtn = document.querySelector('[data-action="rollbackAdvance"]');
+  if (rollbackBtn) {
+    const history = Array.isArray(state.advanceHistory) ? state.advanceHistory : [];
+    const entry = history[history.length - 1];
+    const hasSnapshot = Boolean(entry?.snapshot);
+    rollbackBtn.hidden = !(state.marshalMode && (hasSnapshot || hasRefundableAdvancePoint()));
+    rollbackBtn.title = hasSnapshot
+      ? `Откатить: ${entry.label || "Повышение"}`
+      : "Старый лист без снимка: вручную убрать последнее очко повышения";
+  }
+
+  const skillBudgetBtn = document.querySelector('[data-action="editSkillBudget"]');
+  if (skillBudgetBtn) skillBudgetBtn.hidden = !state.marshalMode;
+}
+
+function openAdvanceModal(index, rollbackFn, rollbackSnapshot) {
   _advRollbackFn = rollbackFn || null;
+  _advRollbackSnapshot = rollbackSnapshot || null;
   _advCurrentIndex = index;
 
   const modal  = document.getElementById('advance-modal');
@@ -46,15 +328,18 @@ function _advClose() {
   setTimeout(hide, 300);
   _advCurrentIndex = null;
   _advRollbackFn   = null;
+  _advRollbackSnapshot = null;
 }
 
 function _advConfirm() {
   const modal    = document.getElementById('advance-modal');
   const selected = modal.querySelector('.adv-opt.selected');
   if (!selected) return;
+  cementSkillStartSpend({ refresh: !isSkillCostCemented() });
   const context = {
     index: typeof _advCurrentIndex === 'number' ? _advCurrentIndex : null,
     rollbackFn: _advRollbackFn,
+    snapshot: _advRollbackSnapshot,
   };
 
   if (!Array.isArray(state.advanceChoices)) state.advanceChoices = [];
@@ -66,6 +351,7 @@ function _advConfirm() {
   }
 
   const choice = selected.dataset.choice;
+  _recordAdvanceHistory(context, choice);
   _advClose();
 
   if (choice === 'edge') {
@@ -109,6 +395,7 @@ function _cancelHindranceAdvance() {
 
   const context = _hindranceAdvanceContext;
   _hindranceAdvanceContext = null;
+  _discardAdvanceHistoryEntry(context);
 
   if (context?.rollbackFn) {
     context.rollbackFn();
@@ -178,7 +465,7 @@ function openHindranceEditPicker() {
     nameRow.append(nameEl, degreeBadge);
     if (h._reduceProgress) {
       const prog = document.createElement('span');
-      prog.className = 'hindrance-progress-badge';
+      prog.className = 'hindrance-progress-inline-badge';
       prog.textContent = `${h._reduceProgress}/2`;
       nameRow.append(prog);
     }

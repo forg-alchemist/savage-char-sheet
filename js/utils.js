@@ -163,26 +163,7 @@ function isSkillCostCemented() {
   return (state.rank || 1) > 1 || (state.advanceChoices || []).some(Boolean);
 }
 
-function getTotalSkillSpend() {
-  const cemented = isSkillCostCemented();
-
-  const skillSteps = state.skills.reduce((sum, skill) => {
-    const key = getSkillAttributeKey(skill.name);
-    const attrDie = key ? parseTrait(state.attributes[key]).die : undefined;
-    let cost;
-    if (cemented) {
-      // Заморожено: используем уплаченную стоимость; ленивая заморозка для старых сохранений
-      if (skill._startSpend == null) skill._startSpend = skillCost(skill, attrDie);
-      cost = skill._startSpend;
-    } else {
-      // До повышений — динамический расчёт по текущей характеристике (как и было),
-      // попутно держим актуальный базис на случай скорого цементирования
-      cost = skillCost(skill, attrDie);
-      skill._startSpend = cost;
-    }
-    return sum + cost;
-  }, 0);
-
+function getCustomSkillSpendEntries() {
   const allArcaneSkillNames = new Set([
     ...(ARCANE_SKILLS.smarts || []),
     ...(ARCANE_SKILLS.spirit || []),
@@ -190,24 +171,51 @@ function getTotalSkillSpend() {
   const activeArcaneSkills = new Set(
     computeArchetypes().map(arch => ARCHETYPE_ARCANE_SKILL[arch]).filter(Boolean)
   );
-  const customSteps = Object.entries(state.customSkills || {})
+
+  return Object.entries(state.customSkills || {})
     .flatMap(([key, slots]) => slots
       .filter(s => s.die && s.die !== "-")
       .filter(s => !allArcaneSkillNames.has(s.name) || activeArcaneSkills.has(s.name))
       .map(s => ({ s, key }))
-    )
-    .reduce((sum, { s, key }) => {
-      const attrDie = parseTrait(state.attributes[key]).die;
-      let cost;
-      if (cemented) {
-        if (s._startSpend == null) s._startSpend = customSkillCost(s, attrDie);
-        cost = s._startSpend;
-      } else {
-        cost = customSkillCost(s, attrDie);
-        s._startSpend = cost;
-      }
-      return sum + cost;
-    }, 0);
+    );
+}
+
+function cementSkillStartSpend({ refresh = false } = {}) {
+  (state.skills || []).forEach((skill) => {
+    const key = getSkillAttributeKey(skill.name);
+    const attrDie = key ? parseTrait(state.attributes[key]).die : undefined;
+    if (refresh || skill._startSpend == null) skill._startSpend = skillCost(skill, attrDie);
+  });
+
+  getCustomSkillSpendEntries().forEach(({ s, key }) => {
+    const attrDie = parseTrait(state.attributes[key]).die;
+    if (refresh || s._startSpend == null) s._startSpend = customSkillCost(s, attrDie);
+  });
+}
+
+function reconcileSkillStartSpend() {
+  if (isSkillCostCemented()) cementSkillStartSpend();
+}
+
+function getTotalSkillSpend() {
+  const cemented = isSkillCostCemented();
+
+  const skillSteps = (state.skills || []).reduce((sum, skill) => {
+    const key = getSkillAttributeKey(skill.name);
+    const attrDie = key ? parseTrait(state.attributes[key]).die : undefined;
+    const cost = cemented && skill._startSpend != null
+      ? skill._startSpend
+      : skillCost(skill, attrDie);
+    return sum + cost;
+  }, 0);
+
+  const customSteps = getCustomSkillSpendEntries().reduce((sum, { s, key }) => {
+    const attrDie = parseTrait(state.attributes[key]).die;
+    const cost = cemented && s._startSpend != null
+      ? s._startSpend
+      : customSkillCost(s, attrDie);
+    return sum + cost;
+  }, 0);
 
   return skillSteps + customSteps;
 }

@@ -192,7 +192,9 @@ function getMountEquipmentPurchaseOptions() {
   return [...baseOptions, ...armorOptions];
 }
 
-function buyMountEquipment(option) {
+// free=true — снаряжение «найдено» (без списания денег); все лимиты,
+// взаимоисключения и требования при этом по-прежнему действуют.
+function buyMountEquipment(option, free = false) {
   if (!state.mount) return false;
   const equipment = ensureMountEquipment();
   const gearItem = option.type === "gear" ? MOUNT_GEAR_ITEMS[option.key] : null;
@@ -228,7 +230,7 @@ function buyMountEquipment(option) {
     showToast("У лошади уже есть броня");
     return false;
   }
-  if (!spendMoney(option.priceCents)) {
+  if (!free && !spendMoney(option.priceCents)) {
     showToast("Не хватает средств!");
     return false;
   }
@@ -238,6 +240,13 @@ function buyMountEquipment(option) {
     equipment[option.key] = true;
   }
   if (option.type === "armor") equipment.armorId = option.armorId;
+  // Пометка происхождения для карточки: куплено / найдено (mixed — если для
+  // счётного предмета были оба варианта).
+  if (!equipment._source || typeof equipment._source !== "object") equipment._source = {};
+  const srcKey = option.type === "armor" ? "armor" : option.key;
+  const newSrc = free ? "found" : "bought";
+  const prevSrc = equipment._source[srcKey];
+  equipment._source[srcKey] = (prevSrc && prevSrc !== newSrc) ? "mixed" : newSrc;
   commitSheetUpdate({ hydrate: true, recalc: false, renderMount: true, renderChoices: "weapons" });
   updateMountMoneyBadges();
   return true;
@@ -263,6 +272,12 @@ function removeMountEquipment(key) {
       equipment[key] = false;
     }
   }
+  // Снять пометку происхождения, когда предмет полностью убран
+  const srcKey = key === "armor" ? "armor" : key;
+  const stillOwned = key === "armor"
+    ? Boolean(equipment.armorId)
+    : getMountGearOwnedCount(equipment, MOUNT_GEAR_ITEMS[key] || {}) > 0;
+  if (!stillOwned && equipment._source) delete equipment._source[srcKey];
   // Если чехлов стало меньше — лишние винтовки возвращаются персонажу
   const popped = reconcileStashedRifles();
   if (popped) commitSheetUpdate();

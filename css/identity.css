@@ -33,35 +33,6 @@
   min-height: 0;
 }
 
-.stat-badge[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 210px;
-  background: rgba(14, 10, 6, 0.96);
-  color: #e8d9b8;
-  border: 1px solid rgba(212,175,55,0.35);
-  border-radius: 5px;
-  padding: 8px 11px;
-  font-size: 0.72rem;
-  font-weight: 400;
-  line-height: 1.55;
-  letter-spacing: 0;
-  text-transform: none;
-  font-style: normal;
-  white-space: normal;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.18s ease;
-  z-index: 50;
-}
-
-.stat-badge[data-tooltip]:hover::after {
-  opacity: 1;
-}
-
 .stat-badge > span {
   color: var(--muted);
   font-size: 0.68rem;
@@ -354,6 +325,54 @@
 [data-output="attrBudget"].at-budget    { border-color: rgba(42,122,59,0.6); color: var(--green); }
 [data-output="skillBudget"].over-budget,
 [data-output="attrBudget"].over-budget  { border-color: rgba(169,20,15,0.6); color: var(--red); }
+
+.skill-budget-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.skill-budget-edit-btn {
+  min-height: 28px;
+  width: 30px;
+  padding: 0;
+  border-color: rgba(122, 85, 40, 0.45);
+  border-radius: 4px;
+  background: rgba(212,175,55,0.14);
+  color: #7a5528;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.skill-budget-edit-btn:hover {
+  background: rgba(212,175,55,0.28);
+  border-color: rgba(122, 85, 40, 0.72);
+  color: var(--red-dark);
+}
+
+.skillbudget-fields {
+  grid-template-columns: 1fr;
+}
+
+.skillbudget-field {
+  display: grid;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.skillbudget-field input {
+  padding-left: 8px;
+}
+
+.skillbudget-actions {
+  grid-template-columns: 1fr;
+}
 
 /* Attr budget */
 .attr-budget-cell          { display: grid; gap: 4px; align-items: stretch; }

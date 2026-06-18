@@ -34,6 +34,7 @@ function renderMountEquipment(defects) {
   const root = document.querySelector('[data-output="mountEquipmentList"]');
   if (!root) return;
   root.replaceChildren();
+  const equipment = ensureMountEquipment();
   const items = getMountEquipmentItems();
   if (!items.length) {
     const empty = document.createElement("div");
@@ -50,15 +51,26 @@ function renderMountEquipment(defects) {
 
     const main = document.createElement("div");
     main.className = "mount-equipment-main";
+    const nameRow = document.createElement("div");
+    nameRow.className = "mount-equipment-name-row";
     const name = document.createElement("strong");
     name.textContent = item.name;
+    nameRow.append(name);
+    // Пометка происхождения (купленные/найденные). Для винтовок в чехле — нет.
+    if (item.kind !== "stash") {
+      const src = equipment._source?.[item.kind === "armor" ? "armor" : item.key] || "bought";
+      const badge = document.createElement("span");
+      badge.className = "mount-eq-source mount-eq-source--" + (src === "mixed" ? "mixed" : src);
+      badge.textContent = src === "found" ? "Найдено" : src === "mixed" ? "Куплено / Найдено" : "Куплено";
+      nameRow.append(badge);
+    }
     const meta = document.createElement("span");
     if (item.kind === "armor") {
       meta.innerHTML = mountArmorEquipmentNote(item);
     } else {
       meta.innerHTML = mountEquipmentStat(`Вес ${formatMountNumber(Number(item.weight) || 0)}`);
     }
-    main.append(name, meta);
+    main.append(nameRow, meta);
 
     const note = item.note || item.notes;
     if (note && note !== "—") {

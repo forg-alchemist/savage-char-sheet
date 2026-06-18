@@ -106,11 +106,6 @@ output { display: grid; min-height: 30px; align-items: center; font-weight: 900;
   transform: translateY(0);
 }
 
-.tooltip-portal-enabled [data-tooltip]::before,
-.tooltip-portal-enabled [data-tooltip]::after {
-  display: none !important;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;

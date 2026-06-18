@@ -375,7 +375,7 @@ function renderPickerList(type, query) {
           return;
         }
       }
-      if (type === "powers" && !state.marshalMode) {
+      if (type === "powers" && !state.marshalMode && !isPowerLimitFree(item)) {
         if (isPowersAtMax()) {
           showToast("Достигнут максимум сил");
           return;

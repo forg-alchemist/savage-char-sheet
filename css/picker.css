@@ -398,13 +398,55 @@
 
 .hindrance-progress-badge {
   position: absolute;
-  right: 34px;
+  right: 6px;
+  top: 34px;
+  width: 24px;
+  color: #1f56b5;
+  pointer-events: none;
+}
+
+.hindrance-progress-ring {
+  position: relative;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(25, 80, 170, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(25, 80, 170, 0.24);
+}
+
+.hindrance-progress-ring svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.hindrance-progress-text {
+  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  display: flex;
+  left: 45%;
+  transform: translate(-50%, -50%);
+  color: #fff !important;
+  font-size: 0.44rem !important;
+  font-weight: 900 !important;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 0 4px #1a3d8a, 0 0 2px #1a3d8a, 0 1px 2px rgba(0,0,0,0.7);
+}
+
+.hindrance-progress-inline-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #5a3aaa;
+  min-width: 32px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(25, 80, 170, 0.14);
+  color: #1f56b5;
+  border: 1px solid rgba(25, 80, 170, 0.3);
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 .edge-rank-badge { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 0.67rem !important; font-weight: 700 !important; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 2px; }
@@ -634,8 +676,8 @@
 }
 
 .pdet-card {
-  background: rgba(0,0,0,0.035);
-  border: 1px solid var(--line);
+  background: rgba(99,63,22,0.13);
+  border: 1px solid rgba(99,63,22,0.28);
   border-radius: 4px;
   padding: 5px 8px;
   font-size: 0.72rem;
@@ -647,10 +689,10 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ink);
+  color: var(--red);
   margin-bottom: 3px;
   padding-bottom: 3px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(99,63,22,0.26);
 }
 
 .pdet-stats {
@@ -658,20 +700,24 @@
   border-collapse: collapse;
   margin: 3px 0 3px;
   font-size: 0.7rem;
+  background: rgba(255,248,232,0.36);
+  border: 1px solid rgba(99,63,22,0.22);
 }
 
 .pdet-stats th {
   font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--muted);
-  padding: 1px 5px 1px 0;
+  color: #6a4b26;
+  padding: 3px 6px 2px;
   text-align: left;
+  background: rgba(78,45,12,0.12);
 }
 
 .pdet-stats td {
-  padding: 1px 5px 1px 0;
+  padding: 3px 6px;
   font-weight: 700;
+  color: #160c03;
 }
 
 .pdet-row {
@@ -683,6 +729,28 @@
 
 .pdet-skills { color: var(--muted); }
 .pdet-traits { font-style: italic; color: var(--muted); }
+
+.pdet-skills-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 5px 0 4px;
+  background: rgba(255,248,232,0.34);
+  border: 1px solid rgba(99,63,22,0.22);
+  color: #1a0a00;
+  font-size: 0.69rem;
+}
+
+.pdet-skills-table td {
+  width: 33.333%;
+  padding: 3px 6px;
+  border-right: 1px solid rgba(99,63,22,0.18);
+  border-bottom: 1px solid rgba(99,63,22,0.18);
+  font-weight: 700;
+  vertical-align: top;
+}
+
+.pdet-skills-table td:last-child { border-right: none; }
+.pdet-skills-table tr:last-child td { border-bottom: none; }
 
 .pdet-note-title {
   font-size: 0.7rem;

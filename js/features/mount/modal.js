@@ -116,7 +116,8 @@ function openMountEquipmentModal() {
       btn.addEventListener("click", () => {
         const option = optionsByKey.get(btn.dataset.mountEquipment);
         if (!option || option.locked) return;
-        if (buyMountEquipment(option)) renderGroup();
+        const free = btn.dataset.mountMode === "found";
+        if (buyMountEquipment(option, free)) renderGroup();
       });
     });
   };
@@ -139,13 +140,21 @@ function openMountEquipmentModal() {
 }
 
 function renderMountEquipmentPurchaseOption(o) {
+  // Снаряжение лошади можно «Купить» (списать деньги) или взять «Найдено»
+  // (бесплатно). Заблокированные позиции показывают причину вместо кнопок.
+  const actions = o.locked
+    ? `<span class="mount-option-price mount-option-locked-label">${o.lockedLabel}</span>`
+    : `<span class="mount-option-actions">
+         <button type="button" class="mount-buy-btn mount-buy-btn--buy" data-mount-equipment="${o.key}" data-mount-mode="buy">Купить · ${formatMountPrice(o.priceCents)}</button>
+         <button type="button" class="mount-buy-btn mount-buy-btn--found" data-mount-equipment="${o.key}" data-mount-mode="found">Найдено</button>
+       </span>`;
   return `
-    <button type="button" class="mount-option mount-option--${o.variant}${o.locked ? " mount-option--locked" : ""}" data-mount-equipment="${o.key}" ${o.locked ? "disabled" : ""}>
+    <div class="mount-option mount-option--equip mount-option--${o.variant}${o.locked ? " mount-option--locked" : ""}">
       <span class="mount-option-icon">${o.icon}</span>
       <span class="mount-option-body">
         <span class="mount-option-label">${o.label}</span>
         <span class="mount-option-note">${o.note}</span>
       </span>
-      <span class="mount-option-price">${o.locked ? o.lockedLabel : formatMountPrice(o.priceCents)}</span>
-    </button>`;
+      ${actions}
+    </div>`;
 }

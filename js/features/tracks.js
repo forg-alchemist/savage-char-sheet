@@ -59,10 +59,20 @@ function renderAdvanceTrack() {
     button.setAttribute("aria-label", `Повышение ${index + 1}`);
     button.classList.toggle("active", Boolean(state.advancesTrack[index]));
     button.addEventListener("click", () => {
-      if (state.advancesTrack[index]) return;
+      if (state.advancesTrack[index]) {
+        if (state.marshalMode) {
+          const history = Array.isArray(state.advanceHistory) ? state.advanceHistory : [];
+          const canRollbackSnapshot = Boolean(history[history.length - 1]?.snapshot);
+          if (canRollbackSnapshot) rollbackLastAdvance();
+          else refundAdvancePointAt(index);
+        }
+        return;
+      }
+      const rollbackSnapshot = createAdvanceRollbackSnapshot();
+      cementSkillStartSpend({ refresh: !isSkillCostCemented() });
       state.advancesTrack[index] = true;
       renderTracks();
-      openAdvanceModal(index);
+      openAdvanceModal(index, null, rollbackSnapshot);
       commitSheetUpdate({ recalc: false });
     });
     root.append(button);

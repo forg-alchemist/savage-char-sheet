@@ -37,7 +37,7 @@
                 <output data-output="toughness" class="stat-badge-val stat-badge-val--dur">4</output>
               </div>
             </div>
-            <div class="stat-badge" data-tooltip="Защита = Драка/2 + 2 + бонусы оружия (Копьё +1). Задаёт сложность проверки для противника, атакующего в ближнем бою.">
+            <div class="stat-badge" data-tooltip="Защита = Драка/2 + 2. Задаёт сложность проверки для противника, атакующего в ближнем бою.">
               <div class="stat-badge-img">
                 <img src="assets/Protection+.png" alt="Защита" />
                 <output data-output="parry" class="stat-badge-val stat-badge-val--prot">2</output>
@@ -83,7 +83,13 @@
               </label>
             </div>
             <div class="skill-budget-cell">
-              <label><span>Навыки</span><output data-output="skillBudget">0 / 12</output></label>
+              <label>
+                <span>Навыки</span>
+                <div class="skill-budget-row">
+                  <output data-output="skillBudget">0 / 12</output>
+                  <button type="button" class="skill-budget-edit-btn no-print" data-action="editSkillBudget" title="Изменить максимум навыков" hidden>✎</button>
+                </div>
+              </label>
             </div>
             <label class="cash-badge">
               <span>Деньги</span>
@@ -118,7 +124,10 @@
             </div>
 
           </div>
-          <div class="advance-track" data-track="advance"></div>
+          <div class="advance-column">
+            <button type="button" class="advance-remove-btn no-print" data-action="rollbackAdvance" hidden>УБРАТЬ ПОВЫШЕНИЕ</button>
+            <div class="advance-track" data-track="advance"></div>
+          </div>
           <h2>Повышения</h2>
         </section>
       </header>

@@ -17,7 +17,6 @@ const DEFAULT_STATE = {
   money: "",
   moneyCents: "",
   powerCurrent: 0,
-  silyCurrent: 0,
   selectedPowers: [],
   customSkills: {
     agility:  [{ name: "", die: "-" }, { name: "", die: "-" }],
@@ -52,6 +51,7 @@ const DEFAULT_STATE = {
   powersDone: false,
   advancePending: null,
   advanceChoices: [],
+  advanceHistory: [],
   attrPoolBase: 0,
   moneyGrants: {},
   supNatAttr: null,

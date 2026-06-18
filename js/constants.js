@@ -1,5 +1,5 @@
 // Версия листа персонажа — единый источник истины (выводится в футере)
-const APP_VERSION = "0.9.7";
+const APP_VERSION = "0.9.72";
 
 const STORAGE_KEY = "deadlands-character-sheet-v6";
 const DICE_VALUES = [4, 6, 8, 10, 12];

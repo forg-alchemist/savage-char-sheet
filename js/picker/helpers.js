@@ -4,17 +4,47 @@ function reduceProgressSvg(current, max = 2) {
   const dash = ((current / max) * circ).toFixed(2);
   const gap = (circ - dash).toFixed(2);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="2.5" opacity="0.2"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="2.5"
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="4" opacity="0.22"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="4"
       stroke-dasharray="${dash} ${gap}" stroke-linecap="round"
       transform="rotate(-90 ${cx} ${cy})"/>
   </svg>`;
 }
 
 function isSubPower(item) {
+  if (!item) return false;
   if (item.hidden) return false;
   if (item.id) return window.SUB_POWER_IDS?.has(item.id) ?? false;
   return SUB_POWER_PARENTS.some(p => item.name.startsWith(p + ': '));
+}
+
+const SPIRIT_SUMMON_MINOR_PARENT_NAME = "Связь с миром духов: Призвать младшего духа";
+const SPIRIT_SUMMON_CHILD_PREFIX = "Связь с миром духов: Призвать ";
+const SPIRIT_SUMMON_MINOR_CHILD_NAMES = new Set([
+  "Связь с миром духов: Призвать духа предка",
+  "Связь с миром духов: Призвать духа природы (волк)",
+  "Связь с миром духов: Призвать духа природы (малый народец)",
+  "Связь с миром духов: Призвать духа природы (орёл)",
+  "Связь с миром духов: Призвать духа природы (медведь)",
+  "Связь с миром духов: Призвать духа природы (паук)",
+  "Связь с миром духов: Призвать духа природы (буйвол)",
+]);
+
+function isMinorSpiritSummonParent(item) {
+  return !!item && (
+    (item.id && item.id === window.WK_POWERS?.SVYAZ_ML)
+    || item.name === SPIRIT_SUMMON_MINOR_PARENT_NAME
+  );
+}
+
+function isSpiritSummonChildPower(item) {
+  return !!item?.hidden
+    && typeof item.name === "string"
+    && SPIRIT_SUMMON_MINOR_CHILD_NAMES.has(item.name);
+}
+
+function isPowerLimitFree(item) {
+  return isSubPower(item) || !!item?._arcaneGift || isSpiritSummonChildPower(item);
 }
 
 function selectedPrimataSubEdge() {
@@ -314,7 +344,7 @@ function computeMaxSily() {
 }
 
 function computeCurrentSily() {
-  return (state.selectedPowers || []).filter(p => !isSubPower(p) && !p._arcaneGift).length;
+  return (state.selectedPowers || []).filter(p => !isPowerLimitFree(p)).length;
 }
 
 function isPowersAtMax() {
@@ -501,7 +531,7 @@ function addCatalogChoice(type) {
   const exists = state[targetKey].some((selected) => catalogKey(selected, type) === catalogKey(item, type));
   if (exists) return;
 
-  if (type === "powers" && !state.marshalMode && !item._arcaneGift && !isSubPower(item)) {
+  if (type === "powers" && !state.marshalMode && !isPowerLimitFree(item)) {
     if (isPowersAtMax()) {
       showToast("ДОСТИГНУТ ЛИМИТ СИЛ");
       return;

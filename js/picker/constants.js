@@ -100,6 +100,21 @@ const ARCANE_POWERS = {
   ]),
 };
 
+function pdetCellTable(items, className, columns = 3) {
+  const rows = [];
+  for (let i = 0; i < items.length; i += columns) {
+    const cells = items.slice(i, i + columns)
+      .map(item => `<td>${item}</td>`)
+      .join("");
+    rows.push(`<tr>${cells}</tr>`);
+  }
+  return `<table class="${className}"><tbody>${rows.join("")}</tbody></table>`;
+}
+
+function pdetSkillTable(items) {
+  return pdetCellTable(items, "pdet-skills-table", 3);
+}
+
 const POWER_EXTRA_HTML = {
   "Призыв союзника": `<div class="pdet-grid">
   <table class="pdet-table"><tr><th>Ранг</th><th>Ст.</th><th>Союзник</th></tr>
@@ -145,7 +160,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Дух предка</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d8</td><td>d6</td><td>d8</td><td>d8</td><td>d8</td></tr></table>
     <div class="pdet-row">Шаг 4 (d6) · Защита 7 · Стойкость 6</div>
-    <div class="pdet-row pdet-skills">Верховая езда d8 · Выживание d6 · Драка d8 · Запугивание d6 · Скрытность d6 · Стрельба d6 · Храбрость d8</div>
+    ${pdetSkillTable(["Верховая езда d8", "Выживание d6", "Драка d8", "Запугивание d6", "Скрытность d6", "Стрельба d6", "Храбрость d8"])}
     <div class="pdet-row pdet-traits">Бестелесность · Блок · Быстроногость</div>
     <div class="pdet-row">Снаряжение: лук (6/12/24, 2d6) · томагавк (Сила+d6)</div>
   </div>
@@ -155,7 +170,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Гигантский паук</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d10</td><td>d4</td><td>d6</td><td>d10</td><td>d6</td></tr></table>
     <div class="pdet-row">Шаг 4 · Защита 6 · Стойкость 4</div>
-    <div class="pdet-row pdet-skills">Атлетика d10 · Внимание d8 · Драка d8 · Запугивание d10 · Скрытность d10 · Стрельба d10</div>
+    ${pdetSkillTable(["Атлетика d10", "Внимание d8", "Драка d8", "Запугивание d10", "Скрытность d10", "Стрельба d10"])}
     <div class="pdet-row pdet-traits">Бестелесность · Размер −1</div>
     <div class="pdet-row"><em>Зубы</em> — Сила+d4</div>
     <div class="pdet-row"><em>Паутина</em> — Стрельба, дистанция 6 дюймов, малый шаблон; попадание — схвачен, подъём — обездвижен</div>
@@ -168,7 +183,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Медведь</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d6</td><td>d6</td><td>d8</td><td>d12+4</td><td>d12</td></tr></table>
     <div class="pdet-row">Шаг 4 · Защита 6 · Стойкость 10</div>
-    <div class="pdet-row pdet-skills">Атлетика d6 · Внимание d8 · Драка d8 · Запугивание d8 · Храбрость d10</div>
+    ${pdetSkillTable(["Атлетика d6", "Внимание d8", "Драка d8", "Запугивание d8", "Храбрость d10"])}
     <div class="pdet-row pdet-traits">Бестелесность · Размер +2</div>
     <div class="pdet-row"><em>Когти</em> — Сила+d6; <em>Медвежья хватка</em> — при подъёме прижимает к земле. Проверка захваченного на Силу, чтобы освободиться</div>
   </div>
@@ -178,7 +193,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Орёл</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d8</td><td>d4</td><td>d6</td><td>d4−2</td><td>d6</td></tr></table>
     <div class="pdet-row">Шаг 2 · Защита 5 · Стойкость 2</div>
-    <div class="pdet-row pdet-skills">Атлетика d8 · Внимание d10 · Драка d6 · Скрытность d8</div>
+    ${pdetSkillTable(["Атлетика d8", "Внимание d10", "Драка d6", "Скрытность d8"])}
     <div class="pdet-row pdet-traits">Бестелесность · Размер −3 (очень маленький)</div>
     <div class="pdet-row"><em>Зубы и когти</em> — Сила+d4; <em>Полёт</em> — шаг 24</div>
   </div>
@@ -188,7 +203,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Волк</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d8</td><td>d6</td><td>d6</td><td>d6</td><td>d6</td></tr></table>
     <div class="pdet-row">Шаг 4 · Защита 5 · Стойкость 4</div>
-    <div class="pdet-row pdet-skills">Атлетика d8 · Внимание d10 · Драка d6 · Скрытность d8</div>
+    ${pdetSkillTable(["Атлетика d8", "Внимание d10", "Драка d6", "Скрытность d8"])}
     <div class="pdet-row pdet-traits">Бестелесность · Бдительность · Размер −1</div>
     <div class="pdet-row"><em>Быстрый</em> — бег d6; <em>Зубы</em> — Сила+d4</div>
   </div>
@@ -198,7 +213,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Малый народец</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d10</td><td>d10</td><td>d10</td><td>d6</td><td>d6</td></tr></table>
     <div class="pdet-row">Шаг 2 · Защита 8 · Стойкость 3</div>
-    <div class="pdet-row pdet-skills">Драка d12 · Запугивание d6 · Провокация d10 · Скрытность d12</div>
+    ${pdetSkillTable(["Драка d12", "Запугивание d6", "Провокация d10", "Скрытность d12"])}
     <div class="pdet-row pdet-traits">Бестелесность · Размер −2 (мелкий)</div>
     <div class="pdet-row"><em>Исчезновение</em> — при испуге прячется в ближайший природный объект как свободное действие.</div>
   </div>
@@ -208,7 +223,7 @@ const POWER_EXTRA_HTML = {
     <div class="pdet-card-name">Буйвол</div>
     <table class="pdet-stats"><tr><th>Лов</th><th>Смек</th><th>Хар</th><th>Сила</th><th>Вын</th></tr><tr><td>d6</td><td>d4</td><td>d8</td><td>d12+2</td><td>d12</td></tr></table>
     <div class="pdet-row">Шаг 4 · Защита 5 · Стойкость 10</div>
-    <div class="pdet-row pdet-skills">Внимание d6 · Драка d6</div>
+    ${pdetSkillTable(["Внимание d6", "Драка d6"])}
     <div class="pdet-row pdet-traits">Бестелесность · Размер +2</div>
     <div class="pdet-row"><em>Рога</em> — Сила+d6 · <em>Разбег</em> — удар с разбегу рогами</div>
   </div>

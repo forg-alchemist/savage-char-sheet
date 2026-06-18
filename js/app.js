@@ -59,7 +59,8 @@ function init() {
     "removeUnsupportedSkills",
     "migrateWeapons",
     "ensureTraitModel",
-    "migrateLegacySkillSpend",
+    "reconcileSkillStartSpend",
+    "cementSkillStartSpend",
     "reconcileHarrowed",
     "renderTraitBoard",
     "renderTracks",
@@ -81,6 +82,11 @@ function init() {
     "importChar",
     "exportChar",
     "openAdvanceModal",
+    "createAdvanceRollbackSnapshot",
+    "rollbackLastAdvance",
+    "refundLastAdvancePoint",
+    "refundAdvancePointAt",
+    "openSkillBudgetEditModal",
     "commitSheetUpdate",
   ]);
   state.marshalMode = false;
@@ -93,7 +99,7 @@ function init() {
   removeUnsupportedSkills();
   migrateWeapons();
   ensureTraitModel();
-  migrateLegacySkillSpend();
+  reconcileSkillStartSpend();
   reconcileHarrowed();
   // Трейт-борд рисуется один раз ниже — после recalculate() и сброса extraPoints,
   // чтобы сразу отразить корректные бюджет/локи (см. техдолг #9).
@@ -127,8 +133,6 @@ function init() {
 
 function setupGlobalTooltips() {
   if (document.querySelector(".global-tooltip")) return;
-
-  document.body.classList.add("tooltip-portal-enabled");
 
   const tooltip = document.createElement("div");
   tooltip.className = "global-tooltip";
@@ -235,14 +239,6 @@ function removeUnsupportedSkills() {
   state.skills = (state.skills || []).filter((skill) => !REMOVED_DEADLANDS_SKILLS.has(normalizeName(skill.name)));
 }
 
-// Промежуточные сохранения хранили замороженную стоимость в _spent.
-// Переносим её в _startSpend, чтобы заморозка не сбрасывалась при загрузке.
-function migrateLegacySkillSpend() {
-  const carry = (s) => { if (s && s._startSpend == null && s._spent != null) s._startSpend = s._spent; };
-  (state.skills || []).forEach(carry);
-  Object.values(state.customSkills || {}).forEach(slots => (slots || []).forEach(carry));
-}
-
 function ensureTraitModel() {
   for (const key of Object.keys(DEFAULT_STATE.attributes)) {
     if (!state.attributes[key] || state.attributes[key] === "-") state.attributes[key] = "d4";
@@ -301,8 +297,13 @@ function bindStaticControls() {
     if (action === "dealCards") openDealModal();
     if (action === "toggleHorse") toggleMount();
     if (action === "openMountEquipment") openMountEquipmentModal();
+    if (action === "rollbackAdvance") rollbackLastAdvance();
+    if (action === "refundAdvancePoint") refundLastAdvancePoint();
+    if (action === "editSkillBudget") openSkillBudgetEditModal();
     if (action === "rankUp") {
       if (state.rank < RANK_ORDER.length) {
+        const rollbackSnapshot = createAdvanceRollbackSnapshot();
+        cementSkillStartSpend({ refresh: !isSkillCostCemented() });
         const prevRank          = state.rank;
         const prevAdvancesTrack = [...state.advancesTrack];
         const prevAdvanceChoices = [...(state.advanceChoices || [])];
@@ -323,7 +324,7 @@ function bindStaticControls() {
           pruneInvalidPowers();
           syncSubPowers();
           commitSheetUpdate({ renderCatalogPickers: true, renderTracks: true });
-        });
+        }, rollbackSnapshot);
       }
       return;
     }
@@ -623,9 +624,17 @@ function updateArmorSectorOutputs() {
 
 function hasParryBonusSpear() {
   return (state.weapons || []).some(weapon => {
+    if (weapon._stashed) return false;
     const def = resolveCatalogItem("weapons", weapon, weapon);
     return def?.id === "w060" || def?.name === "Копьё";
   });
+}
+
+function updateParryTooltip(hasSpearBonus) {
+  const badge = document.querySelector('[data-output="parry"]')?.closest(".stat-badge");
+  if (!badge) return;
+  const bonusText = hasSpearBonus ? " + бонус оружия (Копьё +1)" : "";
+  badge.dataset.tooltip = `Защита = Драка/2 + 2${bonusText}. Задаёт сложность проверки для противника, атакующего в ближнем бою.`;
 }
 
 function recalculate() {
@@ -635,7 +644,9 @@ function recalculate() {
   const vigor = parseTrait(state.attributes.vigor).die;
   const strength = parseTrait(state.attributes.strength).die;
   const parryBase = fighting ? Math.floor(fighting / 2) + 2 : 2;
-  const parry = parryBase + (hasParryBonusSpear() ? 1 : 0);
+  const hasSpearParryBonus = hasParryBonusSpear();
+  const parry = parryBase + (hasSpearParryBonus ? 1 : 0);
+  updateParryTooltip(hasSpearParryBonus);
   const WKE = window.WK_EDGES || {};
   const WKH = window.WK_HINDRANCES || {};
   const _hasEdge = (id, name) => (state.selectedEdges || []).some(e => id ? e.id === id : e.name === name);
@@ -719,7 +730,7 @@ function recalculate() {
   });
   setOutput("powerMax", psMax);
   setOutput("silyMax", silyMax);
-  setOutput("silyCurrent", (state.selectedPowers || []).filter(p => !isSubPower(p) && !p._arcaneGift).length);
+  setOutput("silyCurrent", (state.selectedPowers || []).filter(p => !isPowerLimitFree(p)).length);
 
 
   setOutput("parry", parry);

@@ -69,6 +69,10 @@ function updateMarshalUI() {
     btn.classList.toggle("marshal-btn--active", !!state.marshalMode);
   }
 
+  if (typeof updateAdvanceRollbackButton === "function") {
+    updateAdvanceRollbackButton();
+  }
+
   // The Harrowed button lives outside the sheet and is only reachable by the Marshal
   const harrowedBtn = document.getElementById("harrowed-btn");
   if (harrowedBtn) harrowedBtn.hidden = !state.marshalMode;

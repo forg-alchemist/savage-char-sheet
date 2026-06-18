@@ -3,7 +3,7 @@
 // Fields that are exported directly (not computed, not session-only)
 const _EXPORT_SCALAR_FIELDS = [
   'name', 'player',
-  'rank', 'advances', 'advancesTrack', 'advanceChoices',
+  'rank', 'advances', 'advancesTrack', 'advanceChoices', 'advanceHistory',
   'attributes', 'attrBonuses', 'attrPoolBase',
   'skills', 'customSkills', 'skillBudgetMax',
   'extraPoints', 'hindranceSpent',
@@ -50,35 +50,19 @@ function _buildCompactV2(raw, artData) {
     }
   }
 
-  // Catalog refs: ID-keyed, skip auto-managed entries
+  // Catalog refs: ID-keyed, skip auto-managed entries. Флаги — через _encodeRef.
   compact.hindranceIds = (raw.selectedHindrances || [])
     .filter(h => !h._auto && h.id)
-    .map(h => {
-      const ref = { id: h.id };
-      if (h._reduceProgress) ref._reduceProgress = h._reduceProgress;
-      return ref;
-    });
+    .map(h => _encodeRef(h.id, h, 'hindrances'));
 
   compact.edgeIds = (raw.selectedEdges || [])
     .filter(e => e.id)
-    .map(e => {
-      if (e.count && e.count > 1) return { id: e.id, count: e.count }; // multi-pick edges keep count
-      return e.id;
-    });
+    .map(e => _encodeRef(e.id, e, 'edges')); // multi-pick edges keep count
 
   // _arcaneGift powers are auto-added from edges on load — skip them
   compact.powerIds  = (raw.selectedPowers || []).filter(p => !p._arcaneGift && p.id).map(p => p.id);
-  compact.weaponIds = (raw.weapons || []).filter(w => w.id).map(w => {
-    const flags = {};
-    if (w._worn) flags._worn = true;
-    if (w._stashed) flags._stashed = true;
-    if (w._bundleKey) flags._bundleKey = w._bundleKey;
-    if (Array.isArray(w._ammo) && w._ammo.some(v => v === false || v === 0)) {
-      flags._ammo = w._ammo.map(Boolean);
-    }
-    return Object.keys(flags).length ? { id: w.id, ...flags } : w.id;
-  });
-  compact.armorIds  = (raw.selectedArmor  || []).filter(a => a.id && isCharacterArmor(a)).map(a => a._equipped ? { id: a.id, _equipped: true } : a.id);
+  compact.weaponIds = (raw.weapons || []).filter(w => w.id).map(w => _encodeRef(w.id, w, 'weapons'));
+  compact.armorIds  = (raw.selectedArmor  || []).filter(a => a.id && isCharacterArmor(a)).map(a => _encodeRef(a.id, a, 'armor'));
   if (compact.mount) compact.mount = _compactMountForExport(compact.mount);
   compact.art       = artData || "";
 
@@ -106,10 +90,60 @@ function _resolveMountDefectIdForExport(ref) {
   return found?.id || null;
 }
 
-// Detects if a ref string is a catalog ID (e.g. "h042", "e015", "ae003", "p090")
-// vs a legacy name string (e.g. "Бугай")
+// Detects if a ref string is a catalog ID vs a legacy name string ("Бугай").
+// Prefixes: ae (archetypeEdges), ma (mountArmor), mg (mountGear), then single
+// h/e/p/w/a (hindrance/edge/power/weapon/armor) и g (gear).
 function _isIdRef(str) {
-  return typeof str === 'string' && /^(ae|[ehpwa])\d{2,3}$/.test(str);
+  return typeof str === 'string' && /^(ae|ma|mg|[ehpwag])\d{2,3}$/.test(str);
+}
+
+// ── Единый список «флагов» предметов по типу (#13) ────────────────────────────
+// Раньше каждый флаг (_worn/_stashed/_equipped/count/_ammo/...) дублировался в
+// кодере и в двух ветках декодера. Теперь — один источник: enc(value) решает,
+// что писать в ссылку (undefined → не писать), dec(value) — что положить в
+// восстановленный предмет (по умолчанию — значение как есть).
+const _REF_FLAG_SPECS = {
+  hindrances: [{ key: '_reduceProgress' }],
+  edges:      [{ key: 'count', enc: c => (c > 1 ? c : undefined) }],
+  weapons: [
+    { key: '_worn' },
+    { key: '_stashed' },
+    { key: '_bundleKey' },
+    { key: '_ammo',
+      enc: a => (Array.isArray(a) && a.some(v => v === false || v === 0) ? a.map(Boolean) : undefined),
+      dec: a => (Array.isArray(a) ? a.map(Boolean) : undefined) },
+  ],
+  armor:      [{ key: '_equipped' }],
+};
+
+// Кодирование ссылки: голый id, если значимых флагов нет; иначе { id, ...флаги }.
+function _encodeRef(id, item, type) {
+  const flags = {};
+  for (const spec of (_REF_FLAG_SPECS[type] || [])) {
+    const v = spec.enc ? spec.enc(item[spec.key]) : item[spec.key];
+    if (v !== undefined && v !== null && v !== false) flags[spec.key] = v;
+  }
+  return Object.keys(flags).length ? { id, ...flags } : id;
+}
+
+// Перенос сохранённых флагов из ссылки в восстановленный предмет.
+function _applyRefFlags(target, ref, type) {
+  if (!target || typeof ref !== 'object' || !ref) return target;
+  for (const spec of (_REF_FLAG_SPECS[type] || [])) {
+    if (!(spec.key in ref)) continue;
+    const v = spec.dec ? spec.dec(ref[spec.key]) : ref[spec.key];
+    if (v !== undefined && v !== null && v !== false) target[spec.key] = v;
+  }
+  return target;
+}
+
+// Декодирование ссылки: id → resolveById, иначе legacy-имя → resolveLegacy,
+// затем перенос флагов. Возвращает копию каталожного предмета или null.
+function _decodeRef(ref, type, resolveById, resolveLegacy) {
+  const id = typeof ref === 'string' ? ref : ref?.id;
+  const base = _isIdRef(id) ? resolveById(id) : resolveLegacy(ref);
+  if (!base) return null;
+  return _applyRefFlags({ ...base }, ref, type);
 }
 
 function _reconstructV2(compact) {
@@ -150,88 +184,46 @@ function _reconstructV2(compact) {
   const armorRefs = compact.armorIds
     ?? (compact.selectedArmor || []).map(a => ({ name: a.name, bonus: a.bonus ?? 0 }));
 
-  state.selectedHindrances = hindranceRefs.map(ref => {
-    const isNew = typeof ref === 'object' ? !!ref.id : _isIdRef(ref);
-    const extra = typeof ref === 'object' && ref._reduceProgress ? { _reduceProgress: ref._reduceProgress } : {};
-
-    if (isNew) {
-      // New format: {id: "h042"} or bare "h042"
-      const id = typeof ref === 'string' ? ref : ref.id;
-      const f  = byId.hindrances?.[id];
-      return f ? { ...f, ...extra } : null;
-    } else {
-      // Legacy format: {name: "Жестокость", degree: "Мелкий"}
-      const name = typeof ref === 'object' ? ref.name : ref;
-      const deg  = typeof ref === 'object' ? ref.degree : null;
-      const f = (deg ? CAT_H.find(h => h.name === name && h.degree === deg) : null)
-             || CAT_H.find(h => h.name === name);
-      return f ? { ...f, ...extra } : null;
+  state.selectedHindrances = hindranceRefs.map(ref => _decodeRef(
+    ref, 'hindrances',
+    id => byId.hindrances?.[id],
+    r => {
+      const name = typeof r === 'object' ? r.name : r;
+      const deg  = typeof r === 'object' ? r.degree : null;
+      return (deg ? CAT_H.find(h => h.name === name && h.degree === deg) : null)
+          || CAT_H.find(h => h.name === name);
     }
-  }).filter(Boolean);
+  )).filter(Boolean);
 
-  state.selectedEdges = edgeRefs.map(ref => {
-    const rawId   = typeof ref === 'string' ? ref : ref.id;
-    const rawName = typeof ref === 'object' ? ref.name : ref;
-    const count   = typeof ref === 'object' && ref.count > 1 ? { count: ref.count } : {};
-    const isNew   = _isIdRef(rawId ?? '');
+  state.selectedEdges = edgeRefs.map(ref => _decodeRef(
+    ref, 'edges',
+    id => byId.edges?.[id],
+    r => CAT_E.find(e => e.name === (typeof r === 'object' ? r.name : r))
+  )).filter(Boolean);
 
-    if (isNew) {
-      const f = byId.edges?.[rawId];
-      return f ? { ...f, ...count } : null;
-    } else {
-      const f = CAT_E.find(e => e.name === rawName);
-      return f ? { ...f, ...count } : null;
+  state.selectedPowers = powerRefs.map(ref => _decodeRef(
+    ref, 'powers',
+    id => byId.powers?.[id],
+    r => CAT_P.find(p => p.name === (typeof r === 'object' ? r.name : r))
+  )).filter(Boolean);
+
+  state.weapons = weaponRefs.map(ref => _decodeRef(
+    ref, 'weapons',
+    id => byId.weapons?.[id],
+    r => CAT_W.find(w => w.name === (typeof r === 'object' ? r.name : r))
+  )).filter(Boolean);
+
+  state.selectedArmor = armorRefs.map(ref => _decodeRef(
+    ref, 'armor',
+    id => byId.armor?.[id],
+    r => {
+      const name  = typeof r === 'string' ? r : r.name;
+      const bonus = typeof r === 'object' ? (r.bonus ?? null) : null;
+      return bonus !== null
+        ? CAT_A.find(a => a.name === name && (a.bonus ?? 0) === bonus)
+        : CAT_A.find(a => a.name === name);
     }
-  }).filter(Boolean);
-
-  state.selectedPowers = powerRefs.map(ref => {
-    if (_isIdRef(ref)) {
-      const f = byId.powers?.[ref]; return f ? { ...f } : null;
-    }
-    const f = CAT_P.find(p => p.name === ref); return f ? { ...f } : null;
-  }).filter(Boolean);
-
-  state.weapons = weaponRefs.map(ref => {
-    const worn = typeof ref === 'object' && ref._worn;
-    const stashed = typeof ref === 'object' && ref._stashed;
-    const bundleKey = typeof ref === 'object' && ref._bundleKey ? ref._bundleKey : null;
-    const ammo = typeof ref === 'object' && Array.isArray(ref._ammo) ? ref._ammo.map(Boolean) : null;
-    const idOrStr = typeof ref === 'object' ? ref.id : ref;
-    let found = null;
-    if (_isIdRef(idOrStr)) {
-      found = byId.weapons?.[idOrStr]; if (found) found = { ...found };
-    } else {
-      const rawName = typeof ref === 'object' ? ref.name : ref;
-      const f = CAT_W.find(w => w.name === rawName); if (f) found = { ...f };
-    }
-    if (found && worn) found._worn = true;
-    if (found && stashed) found._stashed = true;
-    if (found && bundleKey) found._bundleKey = bundleKey;
-    if (found && ammo) found._ammo = ammo;
-    return found;
-  }).filter(Boolean);
-
-  state.selectedArmor = armorRefs.map(ref => {
-    const equipped = typeof ref === 'object' && ref._equipped;
-    if (_isIdRef(typeof ref === 'string' ? ref : (ref.id ?? ''))) {
-      const id = typeof ref === 'string' ? ref : ref.id;
-      const f  = byId.armor?.[id];
-      if (!f) return null;
-      const item = { ...f };
-      if (equipped) item._equipped = true;
-      return item;
-    }
-    // Legacy: {name, bonus}
-    const name  = typeof ref === 'string' ? ref : ref.name;
-    const bonus = typeof ref === 'object' ? (ref.bonus ?? null) : null;
-    const f = bonus !== null
-      ? CAT_A.find(a => a.name === name && (a.bonus ?? 0) === bonus)
-      : CAT_A.find(a => a.name === name);
-    if (!f) return null;
-    const item = { ...f };
-    if (equipped) item._equipped = true;
-    return item;
-  }).filter(Boolean).filter(isCharacterArmor);
+  )).filter(Boolean).filter(isCharacterArmor);
 
   // Never restore a pending advance UI state — after import the modal is gone
   state.advancePending = null;

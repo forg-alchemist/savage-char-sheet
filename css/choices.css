@@ -55,8 +55,18 @@
   background: var(--paper-bg);
 }
 
+.choice-card--spirit-child {
+  margin-left: 16px;
+  border-left: 4px solid #284b94;
+  background: linear-gradient(90deg, rgba(40,75,148,0.12), var(--paper-bg) 42%);
+}
+
 .choice-card strong { color: var(--red); font-size: 0.92rem; }
 .choice-card span   { color: var(--muted); font-size: 0.72rem; font-weight: 900; }
+
+.choice-card--spirit-child strong {
+  color: #284b94;
+}
 
 .choice-card .degree-badge,
 .choice-card .edge-rank-badge { justify-self: start; }

@@ -30,10 +30,15 @@ function removeChoiceItem(type, index, refund = true) {
       || SUB_POWER_PARENTS.includes(removedItem.name);
     if (isParent) {
       const prefix = removedItem.name + ': ';
-      state[targetKey] = state[targetKey].filter(p =>
-        p.id ? !window.SUB_POWER_IDS?.has(p.id) || !p.name.startsWith(prefix)
-             : !p.name.startsWith(prefix)
-      );
+      state[targetKey] = state[targetKey].filter(p => {
+        if (!p.name?.startsWith(prefix)) return true;
+        if (!p.id) return false;
+        if (window.SUB_POWER_IDS?.has(p.id)) return false;
+        return !isSpiritSummonChildPower(p);
+      });
+    }
+    if (isMinorSpiritSummonParent(removedItem)) {
+      state[targetKey] = state[targetKey].filter(p => !isSpiritSummonChildPower(p));
     }
   }
   if (type === "edges") {
@@ -71,6 +76,32 @@ function openEdgeRemovalModal(edgeName, { onRefund, onNoRefund }) {
   });
 }
 
+function getSpiritChoiceTitle(item) {
+  if (!isSpiritSummonChildPower(item)) return item.name;
+  return "Призыв " + item.name.slice(SPIRIT_SUMMON_CHILD_PREFIX.length);
+}
+
+function getPowerChoiceEntries(items) {
+  const entries = [];
+  const spiritChildren = items
+    .map((item, index) => ({ item, index, isSpiritChild: true }))
+    .filter(({ item }) => !item._auto && isSpiritSummonChildPower(item))
+    .sort((a, b) => getSpiritChoiceTitle(a.item).localeCompare(getSpiritChoiceTitle(b.item), "ru"));
+
+  let hasMinorParent = false;
+  items.forEach((item, index) => {
+    if (item._auto || isSpiritSummonChildPower(item)) return;
+    entries.push({ item, index, isSpiritChild: false });
+    if (isMinorSpiritSummonParent(item)) {
+      hasMinorParent = true;
+      entries.push(...spiritChildren);
+    }
+  });
+
+  if (!hasMinorParent) entries.push(...spiritChildren);
+  return entries;
+}
+
 function renderChoiceList(type) {
   const root = document.querySelector(`[data-choice-list="${type}"]`);
   const targetKey = getCatalogStateKey(type);
@@ -89,10 +120,16 @@ function renderChoiceList(type) {
     return;
   }
 
-  (state[targetKey] || []).forEach((item, index) => {
+  const items = state[targetKey] || [];
+  const choiceEntries = type === "powers"
+    ? getPowerChoiceEntries(items)
+    : items.map((item, index) => ({ item, index, isSpiritChild: false }));
+
+  choiceEntries.forEach(({ item, index, isSpiritChild }) => {
     if (item._auto) return;
     const card = document.createElement("article");
     card.className = "choice-card";
+    if (isSpiritChild) card.classList.add("choice-card--spirit-child");
 
     if (type === "edges" && item.archetype && ARCHETYPE_COLORS[item.archetype]) {
       const c = ARCHETYPE_COLORS[item.archetype];
@@ -101,7 +138,7 @@ function renderChoiceList(type) {
     }
 
     const title = document.createElement("strong");
-    title.textContent = item.name;
+    title.textContent = isSpiritChild ? getSpiritChoiceTitle(item) : item.name;
     if (type === "edges" && item.archetype && ARCHETYPE_COLORS[item.archetype]) {
       title.style.color = ARCHETYPE_COLORS[item.archetype].accent;
     }
@@ -117,7 +154,9 @@ function renderChoiceList(type) {
     remove.textContent = "×";
     if (type === "hindrances" && state.hindrancesDone && !state.marshalMode) remove.hidden = true;
     if (type === "edges" && state.edgesDone && !state.marshalMode) remove.hidden = true;
-    if (type === "powers" && arePowersLocked()) remove.hidden = true;
+    if (type === "powers" && arePowersLocked() && !isPowerLimitFree(item)) remove.hidden = true;
+    if (type === "powers" && isSubPower(item)) remove.hidden = true;
+    if (type === "powers" && !state.marshalMode && isSpiritSummonChildPower(item)) remove.hidden = true;
     if (type === "powers" && item._arcaneGift) remove.hidden = true;
     remove.addEventListener("click", () => {
       // Маршал удаляет черту → спросить условия (вернуть очки vs регресс).
@@ -142,8 +181,15 @@ function renderChoiceList(type) {
       if (item._reduceProgress) {
         const progBadge = document.createElement("span");
         progBadge.className = "hindrance-progress-badge";
-        progBadge.innerHTML = reduceProgressSvg(item._reduceProgress, 2);
+        const progRing = document.createElement("span");
+        progRing.className = "hindrance-progress-ring";
+        progRing.innerHTML = reduceProgressSvg(item._reduceProgress, 2);
+        const progText = document.createElement("span");
+        progText.className = "hindrance-progress-text";
+        progText.textContent = `${item._reduceProgress}/2`;
         progBadge.title = `Снижение: ${item._reduceProgress}/2`;
+        progRing.append(progText);
+        progBadge.append(progRing);
         card.append(progBadge);
       }
       if (item.penalty && item.penalty !== "-") {
