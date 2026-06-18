@@ -11,6 +11,14 @@ function normalizeName(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+// Разрешение элемента каталога по объекту-с-id. Если у item есть id и он найден
+// в CATALOG_BY_ID[type] — возвращает полный каталожный объект; иначе fallback
+// (по умолчанию сам item). Заменяет повторявшийся по коду паттерн
+// `(item.id && window.CATALOG_BY_ID?.[type]?.[item.id]) || item` (#12).
+function resolveCatalogItem(type, item, fallback = item) {
+  return (item?.id && window.CATALOG_BY_ID?.[type]?.[item.id]) || fallback;
+}
+
 function trimNumber(value) {
   return Number.isInteger(value) ? value : value.toFixed(1);
 }

@@ -134,9 +134,7 @@ function _addSpiritPower(spiritName) {
     return;
   }
   (state.selectedPowers = state.selectedPowers || []).push({ ...cat });
-  renderChoiceList("powers");
-  recalculate();
-  scheduleSave();
+  commitSheetUpdate({ renderChoices: "powers" });
 }
 
 // Анимация одного кубика, затем callback
@@ -350,8 +348,7 @@ function openSpiritSummonerModal(cost = 3, kind = "lesser") {
   state.powerCurrent = currentPS - cost;
   const psInput = document.querySelector('[data-bind="powerCurrent"]');
   if (psInput) psInput.value = state.powerCurrent;
-  recalculate();
-  scheduleSave();
+  commitSheetUpdate();
 
   const overlay = document.createElement("div");
   overlay.className = "spirit-overlay";

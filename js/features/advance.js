@@ -37,7 +37,13 @@ function _advClose() {
   const modal  = document.getElementById('advance-modal');
   const dialog = modal.querySelector('.adv-dialog');
   dialog.classList.remove('open');
-  dialog.addEventListener('transitionend', () => { modal.hidden = true; }, { once: true });
+  // Прячем модалку по окончании анимации. Fallback-таймаут обязателен: если
+  // transitionend не сработает (прерванный переход, reduced-motion, фон-вкладка),
+  // без него #advance-modal остаётся видимым и его backdrop блокирует экран.
+  let done = false;
+  const hide = () => { if (done) return; done = true; modal.hidden = true; };
+  dialog.addEventListener('transitionend', hide, { once: true });
+  setTimeout(hide, 300);
   _advCurrentIndex = null;
   _advRollbackFn   = null;
 }
@@ -64,24 +70,21 @@ function _advConfirm() {
 
   if (choice === 'edge') {
     state.advancePending = { type: 'edge' };
-    scheduleSave();
+    commitSheetUpdate({ recalc: false });
     openPickerModal('edges');
   } else if (choice === 'skill1') {
     state.advancePending = { type: 'skill1', count: 1 };
-    scheduleSave();
-    renderTraitBoard();
+    commitSheetUpdate({ recalc: false, renderTraits: true });
   } else if (choice === 'skill2') {
     state.advancePending = { type: 'skill2', count: 2 };
-    scheduleSave();
-    renderTraitBoard();
+    commitSheetUpdate({ recalc: false, renderTraits: true });
   } else if (choice === 'attribute') {
     state.advancePending = { type: 'attribute', count: 1 };
-    scheduleSave();
-    renderTraitBoard();
+    commitSheetUpdate({ recalc: false, renderTraits: true });
   } else if (choice === 'hindrance') {
     state.advancePending = { type: 'hindrance' };
     _hindranceAdvanceContext = context;
-    scheduleSave();
+    commitSheetUpdate({ recalc: false });
     updateHindranceAdvanceBtn();
     openHindranceEditPicker();
   }
@@ -90,8 +93,7 @@ function _advConfirm() {
 function _advCancel() {
   if (typeof _advCurrentIndex === 'number') {
     state.advancesTrack[_advCurrentIndex] = false;
-    renderTracks();
-    scheduleSave();
+    commitSheetUpdate({ recalc: false, renderTracks: true });
   } else if (_advRollbackFn) {
     _advRollbackFn();
   }
@@ -113,11 +115,9 @@ function _cancelHindranceAdvance() {
   } else if (typeof context?.index === 'number') {
     state.advancesTrack[context.index] = false;
     if (Array.isArray(state.advanceChoices)) state.advanceChoices[context.index] = null;
-    renderTracks();
-    recalculate();
-    scheduleSave();
+    commitSheetUpdate({ renderTracks: true });
   } else {
-    scheduleSave();
+    commitSheetUpdate({ recalc: false });
   }
 
   updateHindranceAdvanceBtn();
@@ -257,9 +257,7 @@ function openHindranceEditPicker() {
 
     state.advancePending = null;
     _hindranceAdvanceContext = null;
-    renderChoiceList('hindrances');
-    recalculate();
-    scheduleSave();
+    commitSheetUpdate({ renderChoices: "hindrances" });
     updateHindranceAdvanceBtn();
     overlay.remove();
   });
@@ -283,9 +281,6 @@ function updateHindranceAdvanceBtn() {
   }
 }
 
-// Restore hindrance advance button on page load (advance.js loads after init())
-updateHindranceAdvanceBtn();
-
 document.getElementById('advance-modal').addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (action === 'advConfirm') { _advConfirm(); return; }
@@ -298,3 +293,10 @@ document.getElementById('advance-modal').addEventListener('click', e => {
     document.querySelector('#advance-modal .adv-confirm-btn').disabled = false;
   }
 });
+
+// Restore hindrance advance button label from saved state. app.js загружается
+// последним (см. #7), поэтому advance.js исполняется ДО init() — на момент
+// исполнения тела файла `state` ещё не инициализирован. Откладываем до 'load',
+// когда init() уже отработал; раньше прямой вызов кидал "state is not defined"
+// и срывал привязку обработчика модалки выше.
+window.addEventListener('load', updateHindranceAdvanceBtn);

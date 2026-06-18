@@ -1,3 +1,76 @@
+// Удаление выбранной черты/изъяна/силы. refund=true возвращает очки за черту
+// (переобучение); refund=false снимает без компенсации (регресс по сюжету).
+// Возврат очков касается только черт (по 2 очка), на изъяны/силы не влияет.
+function removeChoiceItem(type, index, refund = true) {
+  const targetKey = getCatalogStateKey(type);
+  const removedItem = state[targetKey][index];
+  if (!removedItem) return;
+
+  if (type === "edges" && (removedItem.count || 1) > 1) {
+    const totalBefore = (state[targetKey] || []).reduce((s, e) => s + (e.count || 1), 0);
+    if (refund && totalBefore > 1) {
+      state.extraPoints = (state.extraPoints || 0) + 2;
+      setOutput("extraPoints", state.extraPoints);
+    }
+    removedItem.count--;
+    commitSheetUpdate({ renderChoices: type });
+    return;
+  }
+
+  state[targetKey].splice(index, 1);
+  if (type === "edges") {
+    const totalAfter = (state[targetKey] || []).reduce((s, e) => s + (e.count || 1), 0);
+    if (refund && totalAfter >= 1) {
+      state.extraPoints = (state.extraPoints || 0) + 2;
+      setOutput("extraPoints", state.extraPoints);
+    }
+  }
+  if (type === "powers" && removedItem) {
+    const isParent = (removedItem.id && window.SUB_POWER_PARENT_IDS?.has(removedItem.id))
+      || SUB_POWER_PARENTS.includes(removedItem.name);
+    if (isParent) {
+      const prefix = removedItem.name + ': ';
+      state[targetKey] = state[targetKey].filter(p =>
+        p.id ? !window.SUB_POWER_IDS?.has(p.id) || !p.name.startsWith(prefix)
+             : !p.name.startsWith(prefix)
+      );
+    }
+  }
+  if (type === "edges") {
+    syncArcaneFreePoers();
+    commitSheetUpdate({ renderChoices: ["powers", type] });
+  } else {
+    commitSheetUpdate({ renderChoices: type });
+  }
+}
+
+// Модалка «Условия удаления» для Маршала: вернуть очки (переобучение) или снять
+// без возврата (регресс — напр. потерял руку → Маршал убирает «Два ствола» и
+// даёт «Однорукий», очки при этом не трогаются).
+function openEdgeRemovalModal(edgeName, { onRefund, onNoRefund }) {
+  buildAcquisitionModal({
+    theme: "weapon",
+    eyebrow: "Условия удаления",
+    title: edgeName,
+    options: [
+      {
+        variants: ["found"], icon: "↩",
+        label: "Вернуть очки",
+        note: "Очки за черту вернутся — её можно купить заново (переобучение)",
+        price: "+ очки",
+        onPick: ({ close }) => { close(); onRefund(); },
+      },
+      {
+        variants: ["buy"], icon: "✕",
+        label: "Без возврата",
+        note: "Черта снимается без компенсации (регресс / потеря по сюжету)",
+        price: "0",
+        onPick: ({ close }) => { close(); onNoRefund(); },
+      },
+    ],
+  });
+}
+
 function renderChoiceList(type) {
   const root = document.querySelector(`[data-choice-list="${type}"]`);
   const targetKey = getCatalogStateKey(type);
@@ -47,47 +120,16 @@ function renderChoiceList(type) {
     if (type === "powers" && arePowersLocked()) remove.hidden = true;
     if (type === "powers" && item._arcaneGift) remove.hidden = true;
     remove.addEventListener("click", () => {
-      const removedItem = state[targetKey][index];
-
-      if (type === "edges" && (removedItem.count || 1) > 1) {
-        const totalBefore = (state[targetKey] || []).reduce((s, e) => s + (e.count || 1), 0);
-        if (totalBefore > 1) {
-          state.extraPoints = (state.extraPoints || 0) + 2;
-          setOutput("extraPoints", state.extraPoints);
-        }
-        removedItem.count--;
-        renderChoiceList(type);
-        recalculate();
-        scheduleSave();
+      // Маршал удаляет черту → спросить условия (вернуть очки vs регресс).
+      // Игрок (во время создания) удаляет как раньше — с возвратом очков.
+      if (type === "edges" && state.marshalMode) {
+        openEdgeRemovalModal(item.name, {
+          onRefund:   () => removeChoiceItem(type, index, true),
+          onNoRefund: () => removeChoiceItem(type, index, false),
+        });
         return;
       }
-
-      state[targetKey].splice(index, 1);
-      if (type === "edges") {
-        const totalAfter = (state[targetKey] || []).reduce((s, e) => s + (e.count || 1), 0);
-        if (totalAfter >= 1) {
-          state.extraPoints = (state.extraPoints || 0) + 2;
-          setOutput("extraPoints", state.extraPoints);
-        }
-      }
-      if (type === "powers" && removedItem) {
-        const isParent = (removedItem.id && window.SUB_POWER_PARENT_IDS?.has(removedItem.id))
-          || SUB_POWER_PARENTS.includes(removedItem.name);
-        if (isParent) {
-          const prefix = removedItem.name + ': ';
-          state[targetKey] = state[targetKey].filter(p =>
-            p.id ? !window.SUB_POWER_IDS?.has(p.id) || !p.name.startsWith(prefix)
-                 : !p.name.startsWith(prefix)
-          );
-        }
-      }
-      if (type === "edges") {
-        syncArcaneFreePoers();
-        renderChoiceList("powers");
-      }
-      renderChoiceList(type);
-      recalculate();
-      scheduleSave();
+      removeChoiceItem(type, index, true);
     });
 
     if (type === "hindrances") {
@@ -194,12 +236,127 @@ function renderChoiceList(type) {
   });
 }
 
+function getWeaponAmmoCapacity(item) {
+  const def = resolveCatalogItem("weapons", item, {});
+  const raw = item.ammoCapacity ?? def.ammoCapacity;
+  const cap = Number(raw);
+  return Number.isFinite(cap) && cap > 0 ? Math.floor(cap) : 0;
+}
+
+function getWeaponAmmoState(item) {
+  const cap = getWeaponAmmoCapacity(item);
+  if (!cap) return [];
+
+  const prev = Array.isArray(item._ammo) ? item._ammo : [];
+  if (!Array.isArray(item._ammo) || item._ammo.length !== cap) {
+    item._ammo = Array.from({ length: cap }, (_, i) => prev[i] !== false && prev[i] !== 0);
+  }
+  return item._ammo;
+}
+
+function toggleWeaponAmmo(item, ammoIndex) {
+  const ammo = getWeaponAmmoState(item);
+  if (!ammo[ammoIndex] && ammo[ammoIndex] !== false) return;
+  ammo[ammoIndex] = !ammo[ammoIndex];
+  commitSheetUpdate({ recalc: false, renderChoices: "weapons" });
+}
+
+function createWeaponAmmoCell(item) {
+  const cell = document.createElement("span");
+  cell.className = "weapon-ammo-cell";
+
+  const cap = getWeaponAmmoCapacity(item);
+  if (!cap) {
+    cell.classList.add("weapon-ammo-cell--empty");
+    cell.textContent = "—";
+    return cell;
+  }
+
+  const ammo = getWeaponAmmoState(item);
+  const activeCount = ammo.filter(Boolean).length;
+
+  const count = document.createElement("span");
+  count.className = "weapon-ammo-count";
+  count.textContent = `${activeCount}/${cap}`;
+  cell.append(count);
+
+  const grid = document.createElement("span");
+  grid.className = "weapon-ammo-grid";
+  if (cap > 20) grid.classList.add("weapon-ammo-grid--dense");
+  if (cap > 50) grid.classList.add("weapon-ammo-grid--micro");
+
+  ammo.forEach((active, ammoIndex) => {
+    const bullet = document.createElement("button");
+    bullet.type = "button";
+    bullet.className = "weapon-ammo-bullet";
+    bullet.classList.toggle("weapon-ammo-bullet--empty", !active);
+    bullet.title = active ? "Патрон заряжен" : "Патрон потрачен";
+    bullet.setAttribute("aria-label", `${item.name}: патрон ${ammoIndex + 1} из ${cap}`);
+    bullet.addEventListener("click", () => toggleWeaponAmmo(item, ammoIndex));
+    grid.append(bullet);
+  });
+
+  cell.append(grid);
+  return cell;
+}
+
+function isBundledWeapon(item) {
+  return !!item?.bundledParentId;
+}
+
+function createWeaponBundleKey(parent) {
+  const id = parent?.id || "weapon";
+  return `${id}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function getBundledWeaponDefinitions(parent) {
+  const ids = Array.isArray(parent?.bundleWith) ? parent.bundleWith : [];
+  return ids
+    .map(id => window.CATALOG_BY_ID?.weapons?.[id])
+    .filter(Boolean);
+}
+
+function addWeaponWithBundle(weaponToAdd) {
+  const parent = { ...weaponToAdd };
+  const children = getBundledWeaponDefinitions(parent);
+
+  if (!children.length) {
+    state.weapons.push(parent);
+    return;
+  }
+
+  const bundleKey = createWeaponBundleKey(parent);
+  parent._bundleKey = bundleKey;
+  state.weapons.push(parent);
+
+  children.forEach(def => {
+    const child = { ...def, _bundleKey: bundleKey };
+    if (parent._worn) child._worn = true;
+    state.weapons.push(child);
+  });
+}
+
+function removeWeaponAt(index) {
+  const item = state.weapons[index];
+  if (!item || isBundledWeapon(item)) return;
+
+  const bundleKey = item._bundleKey;
+  const bundledIds = new Set(Array.isArray(item.bundleWith) ? item.bundleWith : []);
+
+  state.weapons = state.weapons.filter((weapon, weaponIndex) => {
+    if (weaponIndex === index) return false;
+    if (bundleKey && weapon._bundleKey === bundleKey && weapon.bundledParentId === item.id) return false;
+    if (!bundleKey && weapon.bundledParentId === item.id && bundledIds.has(weapon.id)) return false;
+    return true;
+  });
+}
+
 function renderWeaponList(root, weapons) {
   if (!weapons.length) return;
 
   const header = document.createElement("div");
   header.className = "weapon-row weapon-row-header";
-  ["Название", "Дистанция", "Урон", "ББ", "Обойма", "Режим", "МС", "Цена", "Вес", "Примечания", "", "", ""].forEach((label) => {
+  ["Название", "Дистанция", "Урон", "ББ", "Обойма", "Режим", "МС", "Цена", "Вес", "Примечания", "Патроны", "", ""].forEach((label) => {
     const cell = document.createElement("span");
     cell.textContent = label;
     header.append(cell);
@@ -218,7 +375,10 @@ function renderWeaponList(root, weapons) {
 
     [item.name, item.range, item.damage, item.ap, item.magazine, item.mode, item.mc, item.price, item.weight, item.notes].forEach((val, i) => {
       const cell = document.createElement("span");
-      cell.className = i === 0 ? "weapon-cell-name" : "";
+      cell.className = [
+        i === 0 ? "weapon-cell-name" : "",
+        i === 9 ? "weapon-cell-notes" : "",
+      ].filter(Boolean).join(" ");
       cell.textContent = val ?? "—";
       if (i === 0 && item._worn) {
         const wornImg = document.createElement("img");
@@ -231,15 +391,12 @@ function renderWeaponList(root, weapons) {
       row.append(cell);
     });
 
-    // Распорка — толкает кнопки вправо, значения остаются у названия
-    row.append(document.createElement("span"));
+    row.append(createWeaponAmmoCell(item));
 
     // Чехол для винтовки: убрать/вытащить (только для винтовок при наличии чехла);
     // иначе — пустая ячейка для выравнивания грида
-    const rifleSlots = typeof getRifleSlotCount === "function"
-      ? getRifleSlotCount()
-      : (typeof getScabbardCount === "function" ? getScabbardCount() : 0);
-    const canScabbard = typeof isRifleWeapon === "function" && isRifleWeapon(item) && rifleSlots > 0;
+    const rifleSlots = getRifleSlotCount();
+    const canScabbard = !isBundledWeapon(item) && isRifleWeapon(item) && rifleSlots > 0;
     if (canScabbard && item._stashed) {
       const stashBtn = document.createElement("button");
       stashBtn.type = "button";
@@ -260,17 +417,19 @@ function renderWeaponList(root, weapons) {
       row.append(document.createElement("span"));
     }
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "weapon-remove-btn";
-    btn.textContent = "×";
-    btn.addEventListener("click", () => {
-      state.weapons.splice(index, 1);
-      renderChoiceList("weapons");
-      recalculate();
-      scheduleSave();
-    });
-    row.append(btn);
+    if (isBundledWeapon(item)) {
+      row.append(document.createElement("span"));
+    } else {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "weapon-remove-btn";
+      btn.textContent = "×";
+      btn.addEventListener("click", () => {
+        removeWeaponAt(index);
+        commitSheetUpdate();
+      });
+      row.append(btn);
+    }
 
     if (!checkWeaponStrength(item, hasBugai, hasPolnota)) {
       const warning = document.createElement("div");
@@ -324,9 +483,7 @@ function renderArmorList(root, armor) {
       equipBtn.textContent = "Снять";
       equipBtn.addEventListener("click", () => {
         item._equipped = false;
-        renderChoiceList("armor");
-        recalculate();
-        scheduleSave();
+        commitSheetUpdate();
       });
       row.append(equipBtn);
     } else if (!armorEquipStrengthOk(item, index)) {
@@ -342,9 +499,7 @@ function renderArmorList(root, armor) {
       equipBtn.addEventListener("click", () => {
         const err = equipArmor(index);
         if (err) { showToast(err, { html: true }); return; }
-        renderChoiceList("armor");
-        recalculate();
-        scheduleSave();
+        commitSheetUpdate();
       });
       row.append(equipBtn);
     }
@@ -355,9 +510,7 @@ function renderArmorList(root, armor) {
     btn.textContent = "×";
     btn.addEventListener("click", () => {
       state.selectedArmor.splice(index, 1);
-      renderChoiceList("armor");
-      recalculate();
-      scheduleSave();
+      commitSheetUpdate();
     });
     row.append(btn);
 

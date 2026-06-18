@@ -270,7 +270,7 @@ function getPowerPoints(item) {
 }
 
 function isCharacterArmor(item) {
-  const def = (item?.id && window.CATALOG_BY_ID?.armor?.[item.id]) || item;
+  const def = resolveCatalogItem("armor", item);
   return Array.isArray(def?.sectors) && def.sectors.length > 0;
 }
 
@@ -282,7 +282,7 @@ const ARMOR_SECTOR_LABELS = {
 };
 
 function formatArmorSectors(item) {
-  const def = (item?.id && window.CATALOG_BY_ID?.armor?.[item.id]) || item;
+  const def = resolveCatalogItem("armor", item);
   const sectors = Array.isArray(def?.sectors) ? def.sectors : [];
   return sectors.length
     ? sectors.map(sector => ARMOR_SECTOR_LABELS[sector] || sector).join(", ")
@@ -333,15 +333,15 @@ function hasContent(val) {
 
 function getPowerCatalogDefinition(item) {
   if (!item) return item;
-  return (item.id && window.CATALOG_BY_ID?.powers?.[item.id])
+  // fallback=null, чтобы при промахе по id продолжить поиск по .find ниже
+  return resolveCatalogItem("powers", item, null)
     || (CATALOGS.powers || []).find(power => power.id && power.id === item.id)
     || (CATALOGS.powers || []).find(power => power.name === item.name)
     || item;
 }
 
 function getCurrentArchetypeNames() {
-  if (typeof computeArchetypes === "function") return computeArchetypes();
-  return state.archetype ? [state.archetype] : [];
+  return computeArchetypes();
 }
 
 const POWER_ARCHETYPE_DESCRIPTION_FIELDS = [
@@ -414,11 +414,15 @@ function getAvailableCatalogItems(type) {
   const currentRank = state.rank;
   const mapped = source.map((item, index) => ({ ...item, __index: index }));
   if (type === "edges") {
+    // Фильтр по архетипу: ВСЕ черты этого архетипа — независимо от того, выбран
+    // ли он, и независимо от текущего ранга.
+    if (_edgeFilterMode.startsWith("archetype:")) {
+      const targetArchetype = _edgeFilterMode.slice("archetype:".length);
+      return mapped.filter(item => item.archetype === targetArchetype);
+    }
+    if (_edgeFilterMode === "all") return mapped;
     const activeArchetypes = new Set(computeArchetypes());
-    const visibleItems = _edgeFilterMode === "all"
-      ? mapped
-      : mapped.filter(item => isCatalogArchetypeAvailable(item, activeArchetypes));
-    if (_edgeFilterMode === "all") return visibleItems;
+    const visibleItems = mapped.filter(item => isCatalogArchetypeAvailable(item, activeArchetypes));
     if (_edgeFilterMode.startsWith("rank:")) {
       const targetRank = _edgeFilterMode.slice(5);
       return visibleItems.filter(item => item.rank === targetRank);
@@ -507,6 +511,5 @@ function addCatalogChoice(type) {
   state[targetKey].push(item);
   if (type === "edges") pruneInvalidEdges();
   if (type === "powers") pruneInvalidPowers();
-  renderChoiceList(type);
-  scheduleSave();
+  commitSheetUpdate({ recalc: false, renderChoices: type });
 }

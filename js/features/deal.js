@@ -247,11 +247,7 @@ function openDistributionPhase(scene, cards) {
       const idx = DICE_VALUES.indexOf(parseTrait(die).die);
       return sum + (idx >= 0 ? idx : 0);
     }, 0);
-    scheduleSave();
-    renderTraitBoard();
-    recalculate();
-    updateDealButton();
-    updateJokerStatus();
+    commitSheetUpdate({ updateDeal: true, updateJoker: true });
     document.getElementById("deal-modal").remove();
   });
 

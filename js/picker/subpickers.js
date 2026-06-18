@@ -58,10 +58,7 @@ function openPrimetaSubPicker() {
         state[targetKey] = state[targetKey] || [];
         state[targetKey].push(subItem);
         pruneInvalidEdges();
-        renderChoiceList("edges");
-        recalculate();
-        scheduleSave();
-        updateEdgeCostBadge();
+        commitSheetUpdate({ renderChoices: "edges", updateEdgeCost: true });
         overlay.remove();
         const searchEl = document.querySelector("#picker-modal .picker-search");
         if (searchEl && !document.getElementById("picker-modal").hidden) {
@@ -152,10 +149,7 @@ function openKungfuSubPicker(parentName) {
         state[targetKey] = state[targetKey] || [];
         state[targetKey].push({ ...subItem });
         pruneInvalidEdges();
-        renderChoiceList("edges");
-        recalculate();
-        scheduleSave();
-        updateEdgeCostBadge();
+        commitSheetUpdate({ renderChoices: "edges", updateEdgeCost: true });
         overlay.remove();
         const searchEl = document.querySelector("#picker-modal .picker-search");
         if (searchEl && !document.getElementById("picker-modal").hidden) {

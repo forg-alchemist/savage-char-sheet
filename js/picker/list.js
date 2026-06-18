@@ -1,92 +1,4 @@
-﻿let _weaponPage = 0;
-
-const WEAPON_GROUP_ICONS = {
-  "Винтовки":       "assets/Weapon/Rifle.png",
-  "Карабины":       "assets/Weapon/Carbine.png",
-  "Ружья":          "assets/Weapon/Gun.png",
-  "Дерринджеры и пеппербоксы": "assets/Weapon/Derringer.png",
-  "Оружие Гатлинга": "assets/Weapon/Gatling.png",
-  "Прочее":          "assets/Weapon/Other.png",
-  "Взрывчатка":      "assets/Weapon/Dynamite.png",
-  "Холодное оружие": "assets/Weapon/Melee.png",
-  "Боеприпасы":      "assets/Weapon/Ammunition.png",
-  "Револьверы ОД":  "assets/Weapon/Revolver.png",
-  "Револьверы ДД":  "assets/Weapon/Revolver.png",
-};
-
-// Display order of weapon groups in the picker (pages + search-grouped list).
-// Groups not listed here fall to the end, keeping catalog order among themselves.
-const WEAPON_GROUP_ORDER = [
-  "Винтовки", "Карабины", "Ружья", "Дерринджеры и пеппербоксы",
-  "Револьверы ОД", "Револьверы ДД", "Оружие Гатлинга",
-  "Холодное оружие", "Прочее", "Взрывчатка", "Боеприпасы",
-];
-
-function _sortWeaponGroups(arr) {
-  return arr.sort((a, b) => {
-    const ia = WEAPON_GROUP_ORDER.indexOf(a);
-    const ib = WEAPON_GROUP_ORDER.indexOf(b);
-    return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
-  });
-}
-
-function _showWeaponPageNav(groups, page) {
-  const nav = document.getElementById("picker-group-nav");
-  if (!nav) return;
-  nav.hidden = false;
-  const label = document.getElementById("picker-nav-label");
-  const _icon = WEAPON_GROUP_ICONS[groups[page]];
-  const _iconL = _icon ? `<img src="${_icon}" class="picker-nav-icon picker-nav-icon--flip" alt="">` : "";
-  const _iconR = _icon ? `<img src="${_icon}" class="picker-nav-icon" alt="">` : "";
-  label.innerHTML = `${_iconL}<span class="picker-nav-text">${groups[page]}<span class="picker-nav-counter">${page + 1} / ${groups.length}</span></span>${_iconR}`;
-  const prev = document.getElementById("picker-nav-prev");
-  const next = document.getElementById("picker-nav-next");
-  prev.disabled = page === 0;
-  next.disabled = page === groups.length - 1;
-  prev.onclick = () => {
-    _weaponPage = Math.max(0, _weaponPage - 1);
-    const s = document.querySelector("#picker-modal .picker-search");
-    renderPickerList("weapons", s ? s.value : "");
-  };
-  next.onclick = () => {
-    _weaponPage = Math.min(groups.length - 1, _weaponPage + 1);
-    const s = document.querySelector("#picker-modal .picker-search");
-    renderPickerList("weapons", s ? s.value : "");
-  };
-}
-
-function _hideWeaponNav() {
-  const el = document.getElementById("picker-group-nav");
-  if (el) el.hidden = true;
-}
-
-function buyGearCatalogItem(item) {
-  const cost = typeof _parseWeaponCostCents === "function"
-    ? _parseWeaponCostCents(item.price)
-    : null;
-
-  if (cost > 0) {
-    if (typeof spendMoney !== "function" || !spendMoney(cost)) {
-      showToast("Не хватает средств!");
-      return;
-    }
-  }
-
-  if (!state.gear) state.gear = [];
-  state.gear.push({
-    id: item.id,
-    _source: "catalog",
-    name: item.name,
-    notes: item.notes || item.description || "",
-    price: item.price || "",
-    weight: Number(item.weight) || 0,
-  });
-
-  updatePickerMoneyBadge();
-  renderEntries("gear");
-  recalculate();
-  scheduleSave();
-}
+// Row renderers, weapon navigation, and gear purchase helpers live next to this file.
 
 function renderPickerList(type, query) {
   const list = document.querySelector(".picker-list");
@@ -154,28 +66,12 @@ function renderPickerList(type, query) {
     items = items.filter((item) => item.name.toLowerCase().includes(q));
   }
 
-  // Weapon display: pages when no search, flat grouped list when search active
-  let isWeaponSearch = false;
-  if (type === "weapons") {
-    if (!query.trim()) {
-      const wGroups = [];
-      const wGrouped = new Map();
-      for (const item of items) {
-        const g = item.group ?? "Прочее";
-        if (!wGrouped.has(g)) { wGrouped.set(g, []); wGroups.push(g); }
-        wGrouped.get(g).push(item);
-      }
-      _sortWeaponGroups(wGroups);
-      _weaponPage = Math.max(0, Math.min(_weaponPage, wGroups.length - 1));
-      items = wGrouped.get(wGroups[_weaponPage]) || [];
-      _showWeaponPageNav(wGroups, _weaponPage);
-    } else {
-      isWeaponSearch = true;
-      _hideWeaponNav();
-    }
-  } else {
-    _hideWeaponNav();
-  }
+  const weaponView = type === "weapons"
+    ? prepareWeaponPickerItems(items, query)
+    : { items, isSearch: false };
+  if (type !== "weapons") hideWeaponPickerNav();
+  items = weaponView.items;
+  const isWeaponSearch = weaponView.isSearch;
 
   list.replaceChildren();
 
@@ -244,151 +140,7 @@ function renderPickerList(type, query) {
       meta.textContent = getCatalogMeta(item, type);
     }
 
-    let edgeRankBadge = null;
-    let edgeReq = null;
-    if (type === "edges") {
-      edgeRankBadge = document.createElement("span");
-      edgeRankBadge.className = `edge-rank-badge ${rankBadgeClass(item.rank)}`;
-      edgeRankBadge.textContent = item.rank;
-
-      let displayReq = (item.requirements && item.requirements !== "-" && item.requirements !== "—") ? item.requirements : "";
-      displayReq = displayReq.split(",").map(s => s.trim()).filter(s => {
-        if (/дикая\s+карта/i.test(s)) return false;
-        if (/мистический\s+дар\s*\(/i.test(s)) return false;
-        return true;
-      }).join(", ");
-      if (item.name.endsWith("++")) {
-        const plusName = item.name.slice(0, -1);
-        if (!displayReq.includes(plusName)) displayReq = displayReq ? `${plusName}, ${displayReq}` : plusName;
-      } else if (item.name.endsWith("+")) {
-        const baseName = item.name.slice(0, -1);
-        if (!displayReq.includes(baseName)) displayReq = displayReq ? `${baseName}, ${displayReq}` : baseName;
-      }
-      if (displayReq) {
-        edgeReq = document.createElement("div");
-        edgeReq.className = "req-badge";
-        edgeReq.textContent = `Требования: ${displayReq}`;
-      }
-    }
-
-    if (type !== "edges" && type !== "hindrances" && type !== "powers" && type !== "armor" && type !== "weapons") {
-      info.append(meta);
-    }
-
-    if (type === "weapons") {
-      const stats = document.createElement("div");
-      stats.className = "picker-item-desc";
-      const _sp = [];
-      const _dash = v => !v || v === "—";
-      if (!_dash(item.range))    _sp.push(`Дист: ${item.range}`);
-      if (!_dash(item.damage))   _sp.push(`Урон: ${item.damage}`);
-      if (!_dash(item.ap))       _sp.push(`ББ: ${item.ap}`);
-      if (!_dash(item.magazine)) _sp.push(`Обойма: ${item.magazine}`);
-      if (!_dash(item.mode))     _sp.push(`Режим: ${item.mode}`);
-      if (!_dash(item.mc))       _sp.push(`МС: ${item.mc}`);
-      _sp.push(`Цена: ${item.price}`);
-      _sp.push(`Вес: ${item.weight}`);
-      if (item.notes) _sp.push(item.notes);
-      stats.textContent = _sp.join(" · ");
-      info.append(stats);
-    }
-
-    if (type === "armor") {
-      const stats = document.createElement("div");
-      stats.className = "picker-item-desc picker-armor-stats";
-      [
-        ["armor", "Броня", `+${item.bonus}`],
-        ["sectors", "Секторы", formatArmorSectors(item)],
-        ["strength", "МС", item.minStr],
-        ["weight", "Вес", `${item.weight} кг`],
-        ["price", "Цена", item.price],
-      ].forEach(([mod, label, value]) => {
-        const stat = document.createElement("span");
-        stat.className = `picker-armor-stat picker-armor-stat--${mod}`;
-        stat.textContent = `${label}: ${value}`;
-        stats.append(stat);
-      });
-      info.append(stats);
-    }
-
-    const desc = document.createElement("div");
-    desc.className = "picker-item-desc";
-    if (type !== "weapons" && type !== "armor") desc.innerHTML = getCatalogDescription(item, type);
-
-    if (type === "hindrances") {
-      const _harrowedHind = !!item.harrowedOnly;
-      row.classList.add(item.degree === "Крупный" ? "picker-item--major" : "picker-item--minor");
-      if (_harrowedHind) row.classList.add("picker-item--harrowed");
-      const degreeBadge = document.createElement("span");
-      degreeBadge.className = "degree-badge " + (item.degree === "Крупный" ? "major" : "minor") + (_harrowedHind ? " harrowed" : "");
-      degreeBadge.textContent = item.degree;
-      const nameRow = document.createElement("div");
-      nameRow.className = "hindrance-name-row";
-      nameRow.append(name, degreeBadge);
-      desc.className = "picker-item-desc picker-item-desc--minor";
-      info.append(nameRow);
-      if (item.penalty && item.penalty !== "-") {
-        const penaltyEl = document.createElement("div");
-        penaltyEl.className = "picker-item-penalty";
-        penaltyEl.textContent = `Штраф: ${item.penalty}`;
-        info.append(penaltyEl);
-      }
-      if (item.bonus && item.bonus !== "-") {
-        const bonusEl = document.createElement("div");
-        bonusEl.className = "picker-item-bonus";
-        bonusEl.textContent = `Бонус: ${item.bonus}`;
-        info.append(bonusEl);
-      }
-      info.append(desc);
-    } else if (type === "edges") {
-      const nameRow = document.createElement("div");
-      nameRow.className = "hindrance-name-row";
-      nameRow.append(name, edgeRankBadge);
-      info.append(nameRow);
-      if (edgeReq) info.append(edgeReq);
-      info.append(meta, desc);
-      if (item.archetype && ARCHETYPE_COLORS[item.archetype]) {
-        const c = ARCHETYPE_COLORS[item.archetype];
-        row.style.background = c.tint;
-        row.style.borderLeft = `3px solid ${c.border}`;
-        name.style.color = c.accent;
-      }
-    } else if (type === "powers") {
-      const nameRow = document.createElement("div");
-      nameRow.className = "hindrance-name-row";
-      const rankBadge = document.createElement("span");
-      rankBadge.className = `edge-rank-badge ${rankBadgeClass(item.rank)}`;
-      rankBadge.textContent = item.rank;
-      nameRow.append(name, rankBadge);
-
-      const psBadge = document.createElement("span");
-      psBadge.className = "power-ps-badge";
-      psBadge.textContent = `${getPowerPoints(item)} ПС`;
-
-      const powerParts = getPowerDisplayParts(item);
-      const rangeLine = document.createElement("div");
-      rangeLine.className = "picker-item-stat";
-      rangeLine.textContent = `Дистанция: ${powerParts.range}`;
-
-      const durationLine = document.createElement("div");
-      durationLine.className = "picker-item-stat";
-      durationLine.textContent = `Длительность: ${item.duration}`;
-
-      info.append(nameRow, psBadge, rangeLine, durationLine, desc);
-      const extraHtml = POWER_EXTRA_HTML[item.name];
-      if (extraHtml) {
-        const extra = document.createElement("div");
-        extra.className = "power-ext";
-        extra.innerHTML = extraHtml;
-        info.append(extra);
-      }
-    } else if (type === "weapons") {
-      info.append(name);
-    } else if (type === "armor") {
-      info.append(name, meta);
-    } else {
-      info.append(name, meta, desc);
-    }
+    appendPickerRowContent({ type, item, row, info, name, meta });
 
     const isReqMet = type !== "edges" || state.marshalMode || isAdded || checkEdgeRequirements(item);
     const isStrengthOk = (type !== "weapons" && type !== "armor") || state.marshalMode ||
@@ -426,6 +178,7 @@ function renderPickerList(type, query) {
       : 0;
     const rankLimitReached = isMultiPickEdge && item.multiPick === "ranked"
       && multiPickCount >= state.rank;
+    const isBundleChild = type === "weapons" && (item.purchaseLocked || item.bundledParentId);
 
     if (rankLimitReached) {
       addBtn.textContent = "✕  ЛИМИТ РАНГА";
@@ -451,6 +204,12 @@ function renderPickerList(type, query) {
       addBtn.textContent = "✕  ТРЕБОВАНИЯ НЕ ВЫПОЛНЕНЫ";
       addBtn.classList.add("picker-item-add--locked");
       row.classList.add("picker-item--req-locked");
+    } else if (isBundleChild) {
+      addBtn.textContent = "↑";
+      addBtn.title = "Идёт в комплекте с основным оружием";
+      addBtn.disabled = true;
+      addBtn.classList.add("picker-item-add--locked");
+      addBtn.classList.add("picker-item-add--bundle-child");
     } else if (!isStrengthOk && type === "weapons") {
       addBtn.textContent = "✕  СИЛЫ НЕДОСТАТОЧНО";
       addBtn.classList.add("picker-item-add--locked");
@@ -481,10 +240,7 @@ function renderPickerList(type, query) {
         if (item.name === HEAVENLY_KUNGFU && kungfuSubCount === 0) {
           const doFirstHeavenly = () => {
             upgradeKungfuToHeavenly();
-            renderChoiceList("edges");
-            recalculate();
-            scheduleSave();
-            updateEdgeCostBadge();
+            commitSheetUpdate({ renderChoices: "edges", updateEdgeCost: true });
             openKungfuSubPicker(HEAVENLY_KUNGFU);
             const searchEl = document.querySelector("#picker-modal .picker-search");
             if (searchEl && !document.getElementById("picker-modal").hidden) {
@@ -519,10 +275,7 @@ function renderPickerList(type, query) {
               setOutput("extraPoints", state.extraPoints);
             }
           }
-          renderChoiceList("edges");
-          recalculate();
-          scheduleSave();
-          updateEdgeCostBadge();
+          commitSheetUpdate({ renderChoices: "edges", updateEdgeCost: true });
           row.classList.remove("added");
           addBtn.textContent = "+";
         } else {
@@ -548,18 +301,15 @@ function renderPickerList(type, query) {
             pruneInvalidEdges();
             syncArcaneFreePoers();
           }
-          renderChoiceList("powers");
-          renderChoiceList("edges");
-          recalculate();
-          scheduleSave();
-          updateEdgeCostBadge();
-          rerenderPickerIfOpen("edges");
+          commitSheetUpdate({
+            renderChoices: ["powers", "edges"],
+            updateEdgeCost: true,
+            rerenderPickers: "edges",
+          });
         };
 
         if (state.advancePending?.type === "edge" && !existingEdge) {
           state.advancePending = null;
-          scheduleSave();
-          updateEdgeCostBadge();
           doMultiPickAdd();
           return;
         }
@@ -591,11 +341,12 @@ function renderPickerList(type, query) {
         selectedKeys.delete(key);
         row.classList.remove("added");
         addBtn.textContent = "+";
-        if (type === "edges") { syncArcaneFreePoers(); renderChoiceList("powers"); }
-        renderChoiceList(type);
-        recalculate();
-        scheduleSave();
-        if (type === "edges") { updateEdgeCostBadge(); rerenderPickerIfOpen("edges"); }
+        if (type === "edges") syncArcaneFreePoers();
+        commitSheetUpdate({
+          renderChoices: type === "edges" ? ["powers", type] : type,
+          updateEdgeCost: type === "edges",
+          rerenderPickers: type === "edges" ? "edges" : [],
+        });
         return;
       }
       if (type === "edges" && !state.marshalMode && item.name.startsWith("Мистический дар (") &&
@@ -636,16 +387,14 @@ function renderPickerList(type, query) {
           state[targetKey].push(item);
           pruneInvalidEdges();
           syncArcaneFreePoers();
-          renderChoiceList("powers");
-          renderChoiceList(type);
-          recalculate();
-          scheduleSave();
-          updateEdgeCostBadge();
-          rerenderPickerIfOpen("edges");
+          commitSheetUpdate({
+            renderChoices: ["powers", type],
+            updateEdgeCost: true,
+            rerenderPickers: "edges",
+          });
           return;
         }
-        scheduleSave();
-        updateEdgeCostBadge();
+        commitSheetUpdate({ recalc: false, updateEdgeCost: true });
       }
       if (type === "edges" && (state[targetKey] || []).length >= 1) {
         if ((state.extraPoints || 0) < 2) {
@@ -660,31 +409,26 @@ function renderPickerList(type, query) {
             state[targetKey].push(item);
             pruneInvalidEdges();
             syncArcaneFreePoers();
-            renderChoiceList("powers");
-            renderChoiceList(type);
-            recalculate();
-            scheduleSave();
-            updateEdgeCostBadge();
-            rerenderPickerIfOpen("edges");
+            commitSheetUpdate({
+              renderChoices: ["powers", type],
+              updateEdgeCost: true,
+              rerenderPickers: "edges",
+            });
           }
         );
         return;
       }
       if (type === "weapons") {
         openWeaponAcquisitionModal(item, (weaponToAdd) => {
-          state[targetKey].push(weaponToAdd);
-          renderChoiceList("weapons");
-          recalculate();
-          scheduleSave();
+          addWeaponWithBundle(weaponToAdd);
+          commitSheetUpdate();
         });
         return;
       }
       if (type === "armor") {
         openArmorAcquisitionModal(item, (armorToAdd) => {
           state[targetKey].push(armorToAdd);
-          renderChoiceList("armor");
-          recalculate();
-          scheduleSave();
+          commitSheetUpdate();
         });
         return;
       }
@@ -693,14 +437,13 @@ function renderPickerList(type, query) {
         return;
       }
       state[targetKey].push(item);
-      if (type === "edges") { pruneInvalidEdges(); syncArcaneFreePoers(); renderChoiceList("powers"); }
+      if (type === "edges") { pruneInvalidEdges(); syncArcaneFreePoers(); }
       if (type === "powers") { pruneInvalidPowers(); syncSubPowers(); }
-      renderChoiceList(type);
-      recalculate();
-      scheduleSave();
-      if (type === "edges") {
-        rerenderPickerIfOpen("edges");
-      } else if (type !== "weapons" && type !== "armor") {
+      commitSheetUpdate({
+        renderChoices: type === "edges" ? ["powers", type] : type,
+        rerenderPickers: type === "edges" ? "edges" : [],
+      });
+      if (type !== "edges" && type !== "weapons" && type !== "armor") {
         selectedKeys.add(key);
         row.classList.add("added");
         addBtn.textContent = "✓";
@@ -723,14 +466,5 @@ function renderPickerList(type, query) {
     }
   });
 
-  if (weaponGroupRows) {
-    _sortWeaponGroups(weaponGroupOrder);
-    for (const g of weaponGroupOrder) {
-      const hdr = document.createElement("div");
-      hdr.className = "picker-group-header";
-      hdr.textContent = g;
-      list.append(hdr);
-      for (const r of weaponGroupRows.get(g)) list.append(r);
-    }
-  }
+  if (weaponGroupRows) appendWeaponPickerGroupedRows(list, weaponGroupRows, weaponGroupOrder);
 }

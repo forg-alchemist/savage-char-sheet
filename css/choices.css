@@ -21,9 +21,10 @@
 
 .hindrance-points.full { color: var(--red); background: rgba(169,20,15,0.1); border-color: rgba(169,20,15,0.3); }
 
-.choice-controls { margin-top: 8px; }
+.choice-controls { margin-top: 8px; display: flex; gap: 6px; }
 
 .choice-controls button {
+  flex: 1;
   width: 100%;
   padding: 6px 10px;
   background: var(--red);
@@ -36,6 +37,11 @@
 }
 
 .choice-controls button:hover { background: var(--red-dark); }
+
+/* Marshal-only «разблокировать» — стальной акцент, чтобы отличался от «Добавить» */
+.unlock-section-btn          { background: #2b2b2f !important; color: #e6c200 !important; flex: 0 0 auto; }
+.unlock-section-btn:hover    { background: #38383f !important; }
+.unlock-section-btn[hidden]  { display: none; }
 
 .choice-list { display: grid; gap: 6px; max-height: none; margin-top: 8px; overflow: visible; }
 
@@ -126,7 +132,10 @@
 
 .weapon-row {
   display: grid;
-  grid-template-columns: minmax(259px, max-content) 84px 66px 32px 52px 62px 42px 56px 38px minmax(0, max-content) 1fr auto 28px;
+  /* Колонка «чехол» фиксирована (80px) — запас под кнопку «В чехол / Вытащить»
+     резервируется всегда, чтобы строки не сдвигались при её появлении.
+     Колонка «Патроны» немного у́же, чтобы освободить под это место. */
+  grid-template-columns: minmax(259px, 1.15fr) 84px 66px 32px 52px 62px 42px 56px 38px minmax(110px, 0.65fr) minmax(90px, 0.55fr) 80px 28px;
   gap: 0 8px;
   align-items: center;
   padding: 5px 8px;
@@ -143,7 +152,83 @@
 .weapon-row-data--stashed:hover { background: linear-gradient(rgba(56,107,143,0.22), rgba(56,107,143,0.22)), var(--paper-bg); }
 
 .weapon-cell-name        { font-weight: 700; color: var(--ink); }
+.weapon-cell-notes       { min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
 .weapon-remove-btn       { width: 22px; min-height: 22px; padding: 0; font-size: 0.85rem; }
+
+.weapon-ammo-cell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+}
+
+.weapon-ammo-cell--empty {
+  display: block;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.weapon-ammo-count {
+  color: #5b3518;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.weapon-ammo-grid {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.weapon-ammo-bullet {
+  position: relative;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 1;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+}
+
+.weapon-ammo-bullet::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: url("../assets/bullet.png") center / contain no-repeat;
+}
+
+.weapon-ammo-bullet--empty {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+
+.weapon-ammo-bullet:hover {
+  transform: translateY(-1px);
+}
+
+.weapon-ammo-grid--dense { gap: 4px; }
+.weapon-ammo-grid--dense .weapon-ammo-bullet {
+  width: 13px;
+  min-width: 13px;
+  height: 13px;
+  min-height: 13px;
+}
+.weapon-ammo-grid--micro .weapon-ammo-bullet {
+  width: 9px;
+  min-width: 9px;
+  height: 9px;
+  min-height: 9px;
+}
 
 /* Кнопка чехла для винтовки — стиль как у НАДЕТЬ/СНЯТЬ брони (синий) */
 .weapon-row-data .weapon-stash-btn {

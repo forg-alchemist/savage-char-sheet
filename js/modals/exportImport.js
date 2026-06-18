@@ -72,6 +72,10 @@ function _buildCompactV2(raw, artData) {
     const flags = {};
     if (w._worn) flags._worn = true;
     if (w._stashed) flags._stashed = true;
+    if (w._bundleKey) flags._bundleKey = w._bundleKey;
+    if (Array.isArray(w._ammo) && w._ammo.some(v => v === false || v === 0)) {
+      flags._ammo = w._ammo.map(Boolean);
+    }
     return Object.keys(flags).length ? { id: w.id, ...flags } : w.id;
   });
   compact.armorIds  = (raw.selectedArmor  || []).filter(a => a.id && isCharacterArmor(a)).map(a => a._equipped ? { id: a.id, _equipped: true } : a.id);
@@ -136,7 +140,13 @@ function _reconstructV2(compact) {
   const powerRefs = compact.powerIds
     ?? (compact.selectedPowers || []).filter(p => !p._arcaneGift).map(p => p.name);
   const weaponRefs = compact.weaponIds
-    ?? (compact.weapons || []).map(w => w.name);
+    ?? (compact.weapons || []).map(w => typeof w === 'string' ? w : ({
+      name: w.name,
+      ...(w._worn ? { _worn: true } : {}),
+      ...(w._stashed ? { _stashed: true } : {}),
+      ...(w._bundleKey ? { _bundleKey: w._bundleKey } : {}),
+      ...(Array.isArray(w._ammo) ? { _ammo: w._ammo.map(Boolean) } : {}),
+    }));
   const armorRefs = compact.armorIds
     ?? (compact.selectedArmor || []).map(a => ({ name: a.name, bonus: a.bonus ?? 0 }));
 
@@ -184,15 +194,20 @@ function _reconstructV2(compact) {
   state.weapons = weaponRefs.map(ref => {
     const worn = typeof ref === 'object' && ref._worn;
     const stashed = typeof ref === 'object' && ref._stashed;
+    const bundleKey = typeof ref === 'object' && ref._bundleKey ? ref._bundleKey : null;
+    const ammo = typeof ref === 'object' && Array.isArray(ref._ammo) ? ref._ammo.map(Boolean) : null;
     const idOrStr = typeof ref === 'object' ? ref.id : ref;
     let found = null;
     if (_isIdRef(idOrStr)) {
       found = byId.weapons?.[idOrStr]; if (found) found = { ...found };
     } else {
-      const f = CAT_W.find(w => w.name === idOrStr); if (f) found = { ...f };
+      const rawName = typeof ref === 'object' ? ref.name : ref;
+      const f = CAT_W.find(w => w.name === rawName); if (f) found = { ...f };
     }
     if (found && worn) found._worn = true;
     if (found && stashed) found._stashed = true;
+    if (found && bundleKey) found._bundleKey = bundleKey;
+    if (found && ammo) found._ammo = ammo;
     return found;
   }).filter(Boolean);
 

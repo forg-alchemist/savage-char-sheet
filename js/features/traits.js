@@ -208,10 +208,10 @@ function renderAttributeRow(group) {
 
   if (state.marshalMode) {
     fullyLocked = false;
-    attrOnChange = (value) => { state.attributes[group.key] = value; recalculate(); scheduleSave(); };
+    attrOnChange = (value) => { state.attributes[group.key] = value; commitSheetUpdate(); };
   } else if (!state.dealDone) {
     fullyLocked = false;
-    attrOnChange = (value) => { state.attributes[group.key] = value; recalculate(); scheduleSave(); };
+    attrOnChange = (value) => { state.attributes[group.key] = value; commitSheetUpdate(); };
   } else if (isAttrAdv) {
     if (atMax) {
       fullyLocked = true;
@@ -223,9 +223,7 @@ function renderAttributeRow(group) {
         state.attributes[group.key] = value;
         ap.count--;
         if (ap.count <= 0) state.advancePending = null;
-        recalculate();
-        renderTraitBoard();
-        scheduleSave();
+        commitSheetUpdate();
       };
     }
   } else {
@@ -240,9 +238,7 @@ function renderAttributeRow(group) {
           state.supNatAttr.chosen = group.key;
           state.supNatAttr.used = (state.supNatAttr.used || 0) + 1;
         }
-        recalculate();
-        renderTraitBoard();
-        scheduleSave();
+        commitSheetUpdate();
       };
     } else if (canUpgrade && !atMax) {
       allowedSet = new Set([currentDie, `d${DICE_VALUES[currentIdx + 1]}`]);
@@ -254,9 +250,7 @@ function renderAttributeRow(group) {
           setOutput("extraPoints", state.extraPoints);
           updateSkillBuyBtn();
         }
-        recalculate();
-        renderTraitBoard();
-        scheduleSave();
+        commitSheetUpdate();
       };
       fullyLocked = false;
     } else {
@@ -289,9 +283,7 @@ function renderAttributeRow(group) {
       state.extraPoints = Math.max(0, (state.extraPoints || 0) - 2);
       setOutput("extraPoints", state.extraPoints);
       updateSkillBuyBtn();
-      recalculate();
-      renderTraitBoard();
-      scheduleSave();
+      commitSheetUpdate();
     });
     row.append(plusBtn);
   }
@@ -328,9 +320,7 @@ function renderSkillRow(skill) {
               ap.count--;
               if (ap.count <= 0) state.advancePending = null;
             }
-            recalculate();
-            renderTraitBoard();
-            scheduleSave();
+            commitSheetUpdate();
           },
         });
       } else {
@@ -368,9 +358,7 @@ function renderSkillRow(skill) {
       }
       skill.die = value;
       if (!state.marshalMode && starred && skill.die === "-") skill.die = "d4";
-      recalculate();
-      renderTraitBoard();
-      scheduleSave();
+      commitSheetUpdate();
     },
   });
 
@@ -388,8 +376,7 @@ function renderCustomSkillRow(slot, groupKey) {
   input.placeholder = "Навык…";
   input.addEventListener("input", () => {
     slot.name = input.value;
-    recalculate();
-    scheduleSave();
+    commitSheetUpdate();
   });
 
   if (!state.marshalMode && groupKey) {
@@ -409,9 +396,7 @@ function renderCustomSkillRow(slot, groupKey) {
               ap.count--;
               if (ap.count <= 0) state.advancePending = null;
             }
-            recalculate();
-            renderTraitBoard();
-            scheduleSave();
+            commitSheetUpdate();
           },
         });
       } else {
@@ -444,9 +429,7 @@ function renderCustomSkillRow(slot, groupKey) {
         }
       }
       slot.die = value;
-      recalculate();
-      renderTraitBoard();
-      scheduleSave();
+      commitSheetUpdate();
     },
   });
 
@@ -480,9 +463,7 @@ function renderArcaneSkillRow(slot, groupKey, index, autoAssigned = false) {
               ap.count--;
               if (ap.count <= 0) state.advancePending = null;
             }
-            recalculate();
-            renderTraitBoard();
-            scheduleSave();
+            commitSheetUpdate();
           },
         });
       } else {
@@ -496,9 +477,7 @@ function renderArcaneSkillRow(slot, groupKey, index, autoAssigned = false) {
         removeBtn.textContent = "×";
         removeBtn.addEventListener("click", () => {
           state.customSkills[groupKey].splice(index, 1);
-          renderTraitBoard();
-          recalculate();
-          scheduleSave();
+          commitSheetUpdate();
         });
         row.append(removeBtn);
       }
@@ -528,9 +507,7 @@ function renderArcaneSkillRow(slot, groupKey, index, autoAssigned = false) {
         }
       }
       slot.die = value;
-      recalculate();
-      renderTraitBoard();
-      scheduleSave();
+      commitSheetUpdate();
     },
   });
 
@@ -541,9 +518,7 @@ function renderArcaneSkillRow(slot, groupKey, index, autoAssigned = false) {
     removeBtn.textContent = "×";
     removeBtn.addEventListener("click", () => {
       state.customSkills[groupKey].splice(index, 1);
-      renderTraitBoard();
-      recalculate();
-      scheduleSave();
+      commitSheetUpdate();
     });
     row.append(removeBtn);
   }
@@ -575,9 +550,7 @@ function renderArcaneAddSelect(remaining, groupKey) {
     if (!select.value) return;
     if (!state.customSkills[groupKey]) state.customSkills[groupKey] = [];
     state.customSkills[groupKey].push({ name: select.value, die: "-" });
-    renderTraitBoard();
-    recalculate();
-    scheduleSave();
+    commitSheetUpdate();
   });
 
   wrapper.append(select);

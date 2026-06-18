@@ -37,7 +37,7 @@
                 <output data-output="toughness" class="stat-badge-val stat-badge-val--dur">4</output>
               </div>
             </div>
-            <div class="stat-badge" data-tooltip="Защита = Драка/2 + 2. Задаёт сложность проверки для противника, атакующего в ближнем бою.">
+            <div class="stat-badge" data-tooltip="Защита = Драка/2 + 2 + бонусы оружия (Копьё +1). Задаёт сложность проверки для противника, атакующего в ближнем бою.">
               <div class="stat-badge-img">
                 <img src="assets/Protection+.png" alt="Защита" />
                 <output data-output="parry" class="stat-badge-val stat-badge-val--prot">2</output>
@@ -88,8 +88,9 @@
             <label class="cash-badge">
               <span>Деньги</span>
               <div class="money-fields">
-                <div class="money-wrap"><span class="currency-sign">$</span><input data-bind="money" placeholder="0" /></div>
-                <div class="money-wrap"><span class="currency-sign">¢</span><input data-bind="moneyCents" placeholder="0" /></div>
+                <div class="money-wrap"><span class="currency-sign">$</span><input data-bind="money" placeholder="0" readonly /></div>
+                <div class="money-wrap"><span class="currency-sign">¢</span><input data-bind="moneyCents" placeholder="0" readonly /></div>
+                <button type="button" class="money-add-btn" data-action="editMoney" title="Изменить наличность">$</button>
               </div>
             </label>
             <div class="identity-actions id-full">
@@ -152,6 +153,7 @@
           </div>
           <div class="choice-controls">
             <button type="button" data-action="openPicker" data-type="hindrances">+ Добавить</button>
+            <button type="button" class="unlock-section-btn" data-action="unlockSection" data-type="hindrances" hidden>🔓 Разблокировать</button>
           </div>
           <div class="choice-list" data-choice-list="hindrances"></div>
         </section>
@@ -159,6 +161,7 @@
           <h2>Черты</h2>
           <div class="choice-controls">
             <button type="button" data-action="openPicker" data-type="edges">+ Добавить</button>
+            <button type="button" class="unlock-section-btn" data-action="unlockSection" data-type="edges" hidden>🔓 Разблокировать</button>
           </div>
           <div class="choice-list" data-choice-list="edges"></div>
         </section>
@@ -175,6 +178,7 @@
         <div class="power-picker">
           <div class="choice-controls">
             <button type="button" data-action="openPicker" data-type="powers">+ Добавить</button>
+            <button type="button" class="unlock-section-btn" data-action="unlockSection" data-type="powers" hidden>🔓 Разблокировать</button>
           </div>
           <div class="choice-list powers-list" data-choice-list="powers"></div>
         </div>
@@ -303,7 +307,10 @@
         <button type="button" data-action="print">Печать PDF</button>
         <button type="button" class="footer-clear-btn" data-action="clear">Очистить</button>
         <span data-output="saveState">Сохранено</span>
-        <span class="footer-version" id="app-version"></span>
+        <div class="footer-version-group">
+          <button type="button" class="footer-changelog-btn" data-action="changelog">ИСТОРИЯ ВЕРСИЙ</button>
+          <span class="footer-version" id="app-version"></span>
+        </div>
       </footer>
     </main>
 
@@ -481,15 +488,22 @@
     <script src="js/catalogs/gear.js"></script>
     <script src="js/catalogs/mount.js"></script>
     <script src="js/catalogs/index.js"></script>
+    <script src="js/bootstrap/dependencies.js"></script>
+    <script src="js/bootstrap/commit.js"></script>
     <script src="js/constants.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/features/money.js"></script>
+    <script src="js/modals/acquisitionModal.js"></script>
     <script src="js/features/traits.js"></script>
     <script src="js/features/tracks.js"></script>
     <script src="js/picker/constants.js"></script>
     <script src="js/catalogs/lookup.js"></script>
     <script src="js/picker/helpers.js"></script>
     <script src="js/picker/filter.js"></script>
+    <script src="js/picker/weaponNav.js"></script>
+    <script src="js/picker/rowRenderers.js"></script>
+    <script src="js/picker/gearPurchase.js"></script>
     <script src="js/picker/list.js"></script>
     <script src="js/picker/choice.js"></script>
     <script src="js/panels/spirit.js"></script>
@@ -501,12 +515,19 @@
     <script src="js/panels/loa.js"></script>
     <script src="js/panels/divine.js"></script>
     <script src="js/panels/archetype.js"></script>
-    <script src="js/features/mount.js"></script>
+    <script src="js/features/mount/index.js"></script>
+    <script src="js/features/mount/data.js"></script>
+    <script src="js/features/mount/core.js"></script>
+    <script src="js/features/mount/equipment.js"></script>
+    <script src="js/features/mount/defects.js"></script>
+    <script src="js/features/mount/modal.js"></script>
+    <script src="js/features/mount/render.js"></script>
     <script src="js/features/weaponAcquisition.js"></script>
-    <script src="js/app.js"></script>
     <script src="js/modals/exportImport.js"></script>
     <script src="js/features/advance.js"></script>
     <script src="js/modals/archetypeInfo.js"></script>
     <script src="js/modals/instruction.js"></script>
+    <script src="js/modals/changelog.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>

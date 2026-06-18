@@ -5,13 +5,48 @@ function toggleMarshalMode() {
   } else {
     state.marshalMode = true;
   }
-  scheduleSave();
-  recalculate();
-  renderTraitBoard();
-  renderChoiceList("hindrances");
-  renderChoiceList("edges");
-  renderChoiceList("powers");
-  updateMarshalUI();
+  commitSheetUpdate({
+    renderChoices: ["hindrances", "edges", "powers"],
+    updateMarshal: true,
+  });
+}
+
+// Разблокировка зафиксированного раздела Маршалом. Возвращает раздел в
+// состояние «не зафиксирован», чтобы его снова можно было редактировать и
+// зафиксировать заново (в т.ч. игроком после выхода из режима Маршала).
+function unlockSection(type) {
+  if (!state.marshalMode) return;
+
+  if (type === "hindrances") {
+    if (!state.hindrancesDone) return;
+    state.hindrancesDone = false;
+    // Очки от изъянов начисляются в finishHindrances. Сбрасываем бюджет в 0,
+    // иначе повторная фиксация начислит их второй раз (инвариант init:
+    // !hindrancesDone ⇒ extraPoints = 0).
+    state.extraPoints = 0;
+    setOutput("extraPoints", 0);
+    commitSheetUpdate({
+      recalc: false, renderTraits: true,
+      renderChoices: "hindrances", updateLocks: "hindrances", updateSkillBuy: true,
+    });
+    showToast("Изъяны разблокированы — очки навыков пересчитаются при повторной фиксации");
+    return;
+  }
+
+  if (type === "edges") {
+    if (!state.edgesDone) return;
+    state.edgesDone = false;
+    commitSheetUpdate({ recalc: false, renderChoices: "edges", updateLocks: "edges" });
+    showToast("Черты разблокированы");
+    return;
+  }
+
+  if (type === "powers") {
+    if (!state.powersDone) return;
+    state.powersDone = false;
+    commitSheetUpdate({ recalc: false, renderChoices: "powers", updateLocks: "powers" });
+    showToast("Силы разблокированы");
+  }
 }
 
 function updateMarshalUI() {
@@ -57,4 +92,3 @@ function updateMarshalUI() {
   updatePowersLock();
 }
 // Harrowed (Меченный) lives in js/features/harrowed.js
-

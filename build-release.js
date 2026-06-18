@@ -117,6 +117,26 @@ function inlineCss(html) {
   );
 }
 
+function prepareScriptForInline(src, script) {
+  let preparedScript = script;
+
+  if (src === "js/modals/changelog.js") {
+    const marker = 'const EMBEDDED_CHANGELOG_MARKDOWN = "";';
+    const changelogMarkdown = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf8");
+
+    if (!preparedScript.includes(marker)) {
+      throw new Error("Changelog embed marker not found in js/modals/changelog.js");
+    }
+
+    preparedScript = preparedScript.replace(
+      marker,
+      `const EMBEDDED_CHANGELOG_MARKDOWN = ${JSON.stringify(changelogMarkdown)};`
+    );
+  }
+
+  return preparedScript.replace(/<\/script/gi, "<\\/script");
+}
+
 function inlineScripts(html) {
   return html.replace(/<script src="([^"]+)"><\/script>/g, (_, src) => {
     const scriptPath = path.join(root, src);
@@ -125,9 +145,7 @@ function inlineScripts(html) {
       throw new Error(`Missing script: ${src}`);
     }
 
-    const script = fs
-      .readFileSync(scriptPath, "utf8")
-      .replace(/<\/script/gi, "<\\/script");
+    const script = prepareScriptForInline(src, fs.readFileSync(scriptPath, "utf8"));
 
     return `<script>\n/* ${src} */\n${script}\n</script>`;
   });

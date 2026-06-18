@@ -634,11 +634,54 @@
 
 /* Money */
 .cash-badge { display: grid; gap: 3px; }
-.money-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+/* $ и ¢ чуть у́же, справа компактная зелёная кнопка пополнения «+» */
+.money-fields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 4px; align-items: stretch; }
 .money-wrap   { position: relative; display: flex; align-items: center; }
 .currency-sign { position: absolute; left: 8px; font-weight: 900; color: var(--ink); pointer-events: none; z-index: 1; font-size: inherit; }
 .money-wrap input { padding-left: 18px; }
+/* Деньги нередактируемы напрямую — пополнение через кнопку «+» (модалка) */
+.money-wrap input[readonly] { cursor: default; }
+.money-add-btn {
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: #2f8a3e;
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.money-add-btn:hover { background: #25702f; }
 .money-line { display: grid; grid-template-columns: minmax(360px, 520px); gap: 8px; margin-bottom: 8px; }
+
+/* ── Модалка «Добавить наличность» ── */
+.addcash-modal { position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; }
+.addcash-backdrop { position: absolute; inset: 0; background: rgba(6,4,2,0.88); }
+.addcash-dialog {
+  position: relative; z-index: 1;
+  width: 320px; max-width: calc(100vw - 32px);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.addcash-header { display: flex; align-items: baseline; gap: 8px; }
+.addcash-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.addcash-title { margin: 0; flex: 1; font-size: 1.05rem; color: var(--red-dark); }
+.addcash-close { background: none; border: 0; font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--ink); }
+.addcash-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.addcash-fields input { width: 100%; padding: 9px 8px 9px 20px; font-size: 1rem; }
+.addcash-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.addcash-submit {
+  padding: 10px;
+  border: 0; border-radius: 4px;
+  color: #fff;
+  font-weight: 900; letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.addcash-submit--add         { background: #2f8a3e; }
+.addcash-submit--add:hover   { background: #25702f; }
+.addcash-submit--spend       { background: var(--red); }
+.addcash-submit--spend:hover { background: var(--red-dark); }
 
 /* Rank-up button */
 .rank-up-btn {

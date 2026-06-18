@@ -103,7 +103,8 @@
     overflow: hidden !important;
   }
   .main-page   { grid-template-columns: 180px minmax(0, 1fr) 90px !important; grid-template-rows: auto !important; }
-  .tables-row  { grid-template-columns: 1fr 1fr !important; }
+  /* Оружие / Броня — друг под другом, как на экране (а не слева/справа) */
+  .tables-row  { grid-template-columns: 1fr !important; }
 
   .trait-columns  { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .trait-line, .trait-row { grid-template-columns: 148px minmax(0, 1fr) !important; }
@@ -195,6 +196,41 @@
   .panel-label,
   .weapon-row-header,
   .armor-row-header { break-after: avoid; }
+
+  /* Horse panel: убрать анимационные «шторки» и фикс-высоты + расплющить
+     вложенные гриды в обычный поток. Иначе в печати блок не дробится
+     (резервирует ~190px пустоты под собой) и скачет ширина. Теперь панель
+     течёт как набор мини-блоков и разрывается между ними по страницам. */
+  .horse-panel::before,
+  .horse-panel::after { display: none !important; }
+  .horse-panel,
+  .horse-panel-body,
+  .horse-main,
+  .horse-side {
+    display: block !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  /* Токен лошади (картинка + подпись) — компактным блоком сверху, не на всю высоту */
+  .horse-panel .horse-token {
+    width: auto !important;
+    height: auto !important;
+    justify-self: start !important;
+    margin-bottom: 8px !important;
+    break-inside: avoid;
+  }
+  .horse-panel .horse-token img { height: 90px !important; }
+  /* Боковая колонка (нагрузка + карточка изъянов) идёт под основной */
+  .horse-side { margin-top: 8px !important; }
+  .horse-indicators { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  /* Мини-блоки внутри лошади не дробим пополам */
+  .horse-indicator,
+  .mount-card,
+  .mount-hindrance-card,
+  .horse-stats-table tr,
+  .mount-equipment-row { min-height: 0 !important; break-inside: avoid; }
 
   .footer, .ghost, [data-entry-action="remove"], .choice-controls,
   #picker-modal, #deal-modal { display: none !important; }

@@ -108,14 +108,11 @@ function applyHarrowed() {
   enforceHarrowedSpirit();
   updateHarrowedUI();
 
-  renderTraitBoard();
-  renderChoiceList("hindrances");
-  renderChoiceList("edges");
-  recalculate();
-  if (typeof updateEdgeCostBadge === "function") updateEdgeCostBadge();
-  rerenderPickerIfOpen("hindrances");
-  rerenderPickerIfOpen("edges");
-  scheduleSave();
+  commitSheetUpdate({
+    renderChoices: ["hindrances", "edges"],
+    updateEdgeCost: true,
+    rerenderPickers: ["hindrances", "edges"],
+  });
 }
 
 function updateHarrowedUI() {

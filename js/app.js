@@ -55,6 +55,34 @@ function _migrateItemIds() {
 }
 
 function init() {
+  window.DEADLANDS_BOOT.assertFunctions("app init", [
+    "removeUnsupportedSkills",
+    "migrateWeapons",
+    "ensureTraitModel",
+    "migrateLegacySkillSpend",
+    "reconcileHarrowed",
+    "renderTraitBoard",
+    "renderTracks",
+    "renderCatalogPickers",
+    "syncSubPowers",
+    "syncArcaneFreePoers",
+    "renderChoiceList",
+    "recalculate",
+    "updateHindranceCounter",
+    "updateHindranceLock",
+    "updateEdgeLock",
+    "updatePowersLock",
+    "updateSkillBuyBtn",
+    "renderMount",
+    "updateDealButton",
+    "updateJokerStatus",
+    "updateMarshalUI",
+    "updateHarrowedUI",
+    "importChar",
+    "exportChar",
+    "openAdvanceModal",
+    "commitSheetUpdate",
+  ]);
   state.marshalMode = false;
   // APP_VERSION — единый источник версии: футер и заголовок вкладки
   const versionEl = document.getElementById("app-version");
@@ -67,7 +95,8 @@ function init() {
   ensureTraitModel();
   migrateLegacySkillSpend();
   reconcileHarrowed();
-  renderTraitBoard();
+  // Трейт-борд рисуется один раз ниже — после recalculate() и сброса extraPoints,
+  // чтобы сразу отразить корректные бюджет/локи (см. техдолг #9).
   renderEntries("gear");
   renderTracks();
   renderCatalogPickers();
@@ -237,8 +266,7 @@ function bindStaticControls() {
     element.addEventListener("input", () => {
       setBoundValue(element.dataset.bind, element);
       syncBoundInputs(element.dataset.bind, element);
-      recalculate();
-      scheduleSave();
+      commitSheetUpdate();
     });
   });
 
@@ -249,6 +277,8 @@ function bindStaticControls() {
     if (!action) return;
 
     if (action === "addGear") addEntry("gear");
+    if (action === "editMoney") openMoneyModal();
+    if (action === "changelog") openChangelogModal();
     if (action === "openPicker") {
       const type = event.target.closest("[data-action]").dataset.type;
       if (type === "hindrances" && state.advancePending?.type === "hindrance") {
@@ -259,6 +289,9 @@ function bindStaticControls() {
       if (type === "edges" && state.edgesDone && !state.marshalMode && state.advancePending?.type !== "edge") return;
       if (type === "powers" && arePowersLocked()) return;
       openPickerModal(type);
+    }
+    if (action === "unlockSection") {
+      unlockSection(event.target.closest("[data-action]").dataset.type);
     }
     if (action === "closePicker") closePickerModal();
     if (action === "print") window.print();
@@ -280,11 +313,7 @@ function bindStaticControls() {
         pruneInvalidEdges();
         pruneInvalidPowers();
         syncSubPowers();
-        renderCatalogPickers();
-        renderTracks();
-        recalculate();
-        updateRankWidget();
-        scheduleSave();
+        commitSheetUpdate({ renderCatalogPickers: true, renderTracks: true });
 
         openAdvanceModal('rankup', () => {
           state.rank           = prevRank;
@@ -293,11 +322,7 @@ function bindStaticControls() {
           pruneInvalidEdges();
           pruneInvalidPowers();
           syncSubPowers();
-          renderCatalogPickers();
-          renderTracks();
-          recalculate();
-          updateRankWidget();
-          scheduleSave();
+          commitSheetUpdate({ renderCatalogPickers: true, renderTracks: true });
         });
       }
       return;
@@ -308,9 +333,7 @@ function bindStaticControls() {
       state.extraPoints = Math.max(0, (state.extraPoints || 0) - 1);
       setOutput("extraPoints", state.extraPoints);
       updateSkillBuyBtn();
-      recalculate();
-      renderTraitBoard();
-      scheduleSave();
+      commitSheetUpdate();
     }
   });
 
@@ -335,10 +358,12 @@ function bindStaticControls() {
           setOutput("extraPoints", state.extraPoints);
           updateSkillBuyBtn();
           closePickerModal();
-          renderChoiceList("hindrances");
-          renderTraitBoard();
-          scheduleSave();
-          updateHindranceLock();
+          commitSheetUpdate({
+            recalc: false,
+            renderTraits: true,
+            renderChoices: "hindrances",
+            updateLocks: "hindrances",
+          });
         }
       );
       return;
@@ -349,9 +374,7 @@ function bindStaticControls() {
         () => {
           state.edgesDone = true;
           closePickerModal();
-          renderChoiceList("edges");
-          scheduleSave();
-          updateEdgeLock();
+          commitSheetUpdate({ recalc: false, renderChoices: "edges", updateLocks: "edges" });
         }
       );
       return;
@@ -362,9 +385,7 @@ function bindStaticControls() {
         () => {
           state.powersDone = true;
           closePickerModal();
-          renderChoiceList("powers");
-          scheduleSave();
-          updatePowersLock();
+          commitSheetUpdate({ recalc: false, renderChoices: "powers", updateLocks: "powers" });
         }
       );
       return;
@@ -475,6 +496,13 @@ function computeArchetypes() {
     const idx = result.indexOf("Громила");
     result.splice(idx, 1);
     result.push("Громила");
+  }
+  // «Мастер боевых искусств» — боевая под-ветка, уступает первенство любому
+  // другому архетипу (в т.ч. Просветлённому): уводим в конец.
+  if (seen.has("Мастер боевых искусств") && result.length > 1) {
+    const idx = result.indexOf("Мастер боевых искусств");
+    result.splice(idx, 1);
+    result.push("Мастер боевых искусств");
   }
   return result.length > 0 ? result : ["Стрелок"];
 }
@@ -593,13 +621,21 @@ function updateArmorSectorOutputs() {
   setOutput("armorLegs",  sectors.legs  ? `+${sectors.legs}`  : "0");
 }
 
+function hasParryBonusSpear() {
+  return (state.weapons || []).some(weapon => {
+    const def = resolveCatalogItem("weapons", weapon, weapon);
+    return def?.id === "w060" || def?.name === "Копьё";
+  });
+}
+
 function recalculate() {
   syncHarrowedFromEdges();
   syncArchetypeHindrances();
   const fighting = getSkillDie("Драка");
   const vigor = parseTrait(state.attributes.vigor).die;
   const strength = parseTrait(state.attributes.strength).die;
-  const parry = fighting ? Math.floor(fighting / 2) + 2 : 2;
+  const parryBase = fighting ? Math.floor(fighting / 2) + 2 : 2;
+  const parry = parryBase + (hasParryBonusSpear() ? 1 : 0);
   const WKE = window.WK_EDGES || {};
   const WKH = window.WK_HINDRANCES || {};
   const _hasEdge = (id, name) => (state.selectedEdges || []).some(e => id ? e.id === id : e.name === name);
@@ -769,6 +805,14 @@ function updateHindranceLock() {
   addBtn.textContent = locked ? "Изъяны зафиксированы" : "+ Добавить";
   addBtn.disabled = locked;
   addBtn.classList.toggle("locked-btn", locked);
+  updateSectionUnlockBtn("hindrances", state.hindrancesDone);
+}
+
+// Кнопка «Разблокировать» видна только Маршалу и только если раздел
+// зафиксирован для игрока (соответствующий *Done === true).
+function updateSectionUnlockBtn(type, isDone) {
+  const btn = document.querySelector(`[data-action="unlockSection"][data-type="${type}"]`);
+  if (btn) btn.hidden = !(state.marshalMode && isDone);
 }
 
 function updateSkillBuyBtn() {
@@ -784,6 +828,7 @@ function updateEdgeLock() {
   addBtn.textContent = locked ? "Черты зафиксированы" : "+ Добавить";
   addBtn.disabled = locked;
   addBtn.classList.toggle("locked-btn", locked);
+  updateSectionUnlockBtn("edges", state.edgesDone);
 }
 
 function updatePowersLock() {
@@ -793,6 +838,7 @@ function updatePowersLock() {
   addBtn.textContent = locked ? "Силы зафиксированы" : "+ Добавить";
   addBtn.disabled = locked;
   addBtn.classList.toggle("locked-btn", locked);
+  updateSectionUnlockBtn("powers", state.powersDone);
 }
 
 
@@ -823,8 +869,7 @@ function uploadArt(event) {
       } catch {
         showToast("Не удалось сохранить портрет — слишком большой файл");
       }
-      renderArt();
-      scheduleSave();
+      commitSheetUpdate({ recalc: false, renderArt: true });
     };
     img.src = String(reader.result || "");
   });
@@ -844,11 +889,11 @@ function renderArt() {
 // ── Gear entries ──────────────────────────────────────────────────────────────
 
 function isCatalogGearEntry(entry) {
-  return !!entry && (entry._source === "catalog" || (entry.id && window.CATALOG_BY_ID?.gear?.[entry.id]));
+  return !!entry && (entry._source === "catalog" || !!resolveCatalogItem("gear", entry, null));
 }
 
 function getGearEntryDisplay(entry) {
-  const def = (entry.id && window.CATALOG_BY_ID?.gear?.[entry.id]) || {};
+  const def = resolveCatalogItem("gear", entry, {});
   return {
     name: entry.name || def.name || "",
     notes: entry.notes || def.notes || def.description || "",
@@ -898,9 +943,7 @@ function renderCatalogGearEntry(entry, index) {
   remove.textContent = "×";
   remove.addEventListener("click", () => {
     state.gear.splice(index, 1);
-    renderEntries("gear");
-    recalculate();
-    scheduleSave();
+    commitSheetUpdate({ renderGear: true });
   });
 
   card.append(main, remove);
@@ -924,16 +967,13 @@ function renderEntries(type) {
       input.value = entry[field] ?? "";
       input.addEventListener("input", () => {
         entry[field] = input.type === "number" ? Number(input.value) || 0 : input.value;
-        recalculate();
-        scheduleSave();
+        commitSheetUpdate();
       });
     });
 
     node.querySelector('[data-entry-action="remove"]').addEventListener("click", () => {
       state[type].splice(index, 1);
-      renderEntries(type);
-      recalculate();
-      scheduleSave();
+      commitSheetUpdate({ renderGear: type === "gear" });
     });
 
     root.append(node);
@@ -945,8 +985,7 @@ function addEntry(type) {
     ? { name: "", range: "", damage: "", ap: "", rof: "", ammo: "" }
     : { name: "", notes: "", price: "", weight: 0 };
   state[type].push(empty);
-  renderEntries(type);
-  scheduleSave();
+  commitSheetUpdate({ recalc: false, renderGear: type === "gear" });
 }
 
 // ── Export / Clear ────────────────────────────────────────────────────────────

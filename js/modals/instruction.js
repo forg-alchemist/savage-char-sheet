@@ -193,12 +193,21 @@ function updateSheetScale() {
   const panelGap = readRootPx('--instruction-panel-gap') || 20;
   const buttonGutter = readRootPx('--instruction-button-gutter') || 96;
   const instructionOpen = document.body.classList.contains('instruction-open');
-  const reservedWidth = instructionOpen ? panelWidth + panelGap : buttonGutter;
-  const availableWidth = Math.max(1, window.innerWidth - reservedWidth);
+  const panelReserve = panelWidth + panelGap;
+  // При закрытой панели резервируем гаттер с ОБЕИХ сторон, иначе лист
+  // невозможно отцентрировать: места хватает только слева, и весь остаток
+  // уходит вправо (лист прижат влево). При открытой панели лист сдвигается
+  // вправо от неё.
+  const sideReserve = instructionOpen ? panelReserve : buttonGutter * 2;
+  const availableWidth = Math.max(1, window.innerWidth - sideReserve);
   const scale = Math.min(1, availableWidth / designWidth);
-  const visualLeft = instructionOpen
-    ? reservedWidth
-    : Math.max(buttonGutter, (window.innerWidth - designWidth * scale) / 2);
+  const scaledWidth = designWidth * scale;
+  const renderedLeft = instructionOpen
+    ? panelReserve
+    : Math.max(buttonGutter, (window.innerWidth - scaledWidth) / 2);
+  // margin-left задаётся ДО zoom: zoom его домножит на scale, поэтому делим
+  // на scale, чтобы фактический отступ на экране совпал с расчётным.
+  const visualLeft = renderedLeft / scale;
 
   document.documentElement.style.setProperty('--sheet-scale', String(scale));
   document.documentElement.style.setProperty('--sheet-margin-left', `${visualLeft}px`);

@@ -145,9 +145,9 @@ function _toggleBvIntervention(name) {
   } else {
     state.selectedDivineInterventions = list.filter(n => n !== name);
   }
-  scheduleSave();
   _renderBvModalBody();
   _renderDivinePanelSelected();
+  commitSheetUpdate({ recalc: false });
 }
 
 function _bvCardHtml(bv) {

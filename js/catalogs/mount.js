@@ -56,6 +56,99 @@ window.DEADLANDS_MOUNT_HINDRANCE_IDS = [
   "h103",
 ];
 
+window.DEADLANDS_MOUNT_BLINDNESS_EDGE_IDS = [
+  "e004", // Бдительность
+  "e009", // Блок
+  "e014", // Боевая закалка
+  "e019", // Бугай
+  "e029", // Грозный вид
+  "e035", // Егерь
+  "e036", // Железная воля
+  "e045", // Как на собаке
+  "e046", // Контратака
+  "e080", // Смелость
+  "e082", // Стальная челюсть
+  "e089", // Тяжеловес
+];
+
+window.DEADLANDS_MOUNT_HINDRANCE_EFFECTS = {
+  h099: {
+    indicators: { pace: -1, runDie: -1 },
+    notes: {
+      pace: "Хромота: Шаг -1",
+      runDie: "Хромота: Бег -1 ступень",
+    },
+  },
+  h100: {
+    indicators: { pace: -2, runDie: -1 },
+    notes: {
+      pace: "Хромота: Шаг -2",
+      runDie: "Хромота: Бег -1 ступень",
+    },
+  },
+  h032: {
+    indicators: { pace: -1 },
+    notes: { pace: "Копуша: Шаг -1" },
+  },
+  h074: {
+    load: 60,
+    loadNote: "Полнота: Комфортная нагрузка +60",
+    indicators: { pace: -1, runDie: -1, toughness: 1 },
+    notes: {
+      pace: "Полнота: Шаг -1",
+      runDie: "Полнота: Бег -1 ступень",
+      toughness: "Полнота: Стойкость +1",
+    },
+  },
+  h033: {
+    load: -60,
+    loadNote: "Коротышка: Комфортная нагрузка -60",
+    indicators: { toughness: -1 },
+    notes: { toughness: "Коротышка: Стойкость -1" },
+  },
+  h086: {
+    indicators: { pace: -1, runDie: -1, parry: 1, toughness: 1 },
+    notes: {
+      pace: "Старость: Шаг -1",
+      runDie: "Старость: Бег -1 ступень",
+      parry: "Старость: Защита +1",
+      toughness: "Старость: Стойкость +1",
+    },
+  },
+  h103: {
+    indicators: { pace: 1, runDie: 1, parry: -1, toughness: -1 },
+    notes: {
+      pace: "Юность: Шаг +1",
+      runDie: "Юность: Бег +1 ступень",
+      parry: "Юность: Защита -1",
+      toughness: "Юность: Стойкость -1",
+    },
+    traitReplacements: {
+      regular: [
+        ["Сила d12", "Сила d10"],
+      ],
+      warhorse: [
+        ["Сила d12+2", "Сила d12"],
+      ],
+    },
+  },
+};
+
+window.DEADLANDS_MOUNT_EDGE_EFFECTS = {
+  e009: {
+    indicators: { parry: 1 },
+    notes: { parry: "Блок: Защита +1" },
+  },
+  e019: {
+    load: 60,
+    loadNote: "Бугай: Комфортная нагрузка +60",
+  },
+  e089: {
+    indicators: { toughness: 1 },
+    notes: { toughness: "Тяжеловес: Стойкость +1" },
+  },
+};
+
 window.DEADLANDS_CATALOG_MOUNT_GEAR = [
   {
     id: "mg001",
@@ -343,7 +436,7 @@ window.DEADLANDS_MOUNT_GEAR_BY_KEY = Object.fromEntries(
 
 window.DEADLANDS_CATALOG_MOUNT_ARMOR = [
   {
-    id: "a010",
+    id: "ma001",
     kind: "armor",
     group: "armor",
     icon: "📛",
@@ -355,7 +448,7 @@ window.DEADLANDS_CATALOG_MOUNT_ARMOR = [
     price: "$200",
   },
   {
-    id: "a015",
+    id: "ma002",
     kind: "armor",
     group: "armor",
     icon: "🔰",

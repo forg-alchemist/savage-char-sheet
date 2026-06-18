@@ -25,9 +25,7 @@ function renderTrack(key, labels) {
       const currentCount = getTrackSeverity(state[key]);
       const nextCount = currentCount === targetCount ? index : targetCount;
       state[key] = labels.map((_, i) => i < nextCount);
-      renderTracks();
-      recalculate();
-      scheduleSave();
+      commitSheetUpdate({ renderTracks: true });
     });
     root.append(button);
   });
@@ -65,7 +63,7 @@ function renderAdvanceTrack() {
       state.advancesTrack[index] = true;
       renderTracks();
       openAdvanceModal(index);
-      scheduleSave();
+      commitSheetUpdate({ recalc: false });
     });
     root.append(button);
   }

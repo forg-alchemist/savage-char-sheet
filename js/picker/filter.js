@@ -1,18 +1,16 @@
 let _powerFilterMode = "normal";
 
+function edgeFilterModeLabel(mode) {
+  if (mode === "all") return "ФИЛЬТР: ВСЕ";
+  if (mode.startsWith("rank:"))      return "ФИЛЬТР: " + mode.slice(5).toUpperCase();
+  if (mode.startsWith("archetype:")) return "ФИЛЬТР: " + mode.slice(10).toUpperCase();
+  return "ФИЛЬТР ВЫБОРА";
+}
+
 function updateFilterBtnLabel() {
   const btn = document.getElementById("picker-filter-btn");
   if (!btn) return;
-  const labels = {
-    "normal":           "ФИЛЬТР ВЫБОРА",
-    "all":              "ФИЛЬТР: ВСЕ",
-    "rank:Новичок":     "ФИЛЬТР: НОВИЧОК",
-    "rank:Закалённый":  "ФИЛЬТР: ЗАКАЛЁННЫЙ",
-    "rank:Ветеран":     "ФИЛЬТР: ВЕТЕРАН",
-    "rank:Герой":       "ФИЛЬТР: ГЕРОЙ",
-    "rank:Легенда":     "ФИЛЬТР: ЛЕГЕНДА",
-  };
-  btn.textContent = labels[_edgeFilterMode] || "ФИЛЬТР ВЫБОРА";
+  btn.textContent = edgeFilterModeLabel(_edgeFilterMode);
   btn.classList.toggle("picker-filter-btn--active", _edgeFilterMode !== "normal");
 }
 
@@ -89,17 +87,22 @@ function openEdgeFilterPopup(anchorBtn) {
   popup.className = "picker-filter-popup";
 
   const RANKS = ["Новичок", "Закалённый", "Ветеран", "Герой", "Легенда"];
+  const ARCHETYPES = Object.keys(ARCHETYPE_COLORS);
   const options = [
     { label: "ПОКАЗАТЬ ВСЕ",  mode: "all" },
     ...RANKS.map(r => ({ label: r.toUpperCase(), mode: `rank:${r}` })),
+    { sep: true },
+    ...ARCHETYPES.map(a => ({ label: a.toUpperCase(), mode: `archetype:${a}` })),
+    { sep: true },
     { label: "ОБЫЧНЫЙ РЕЖИМ", mode: "normal" },
   ];
 
-  options.forEach((opt, i) => {
-    if (i === options.length - 1) {
+  options.forEach((opt) => {
+    if (opt.sep) {
       const sep = document.createElement("div");
       sep.className = "picker-filter-sep";
       popup.append(sep);
+      return;
     }
     const btn = document.createElement("button");
     btn.type = "button";

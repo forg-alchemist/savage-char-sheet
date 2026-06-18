@@ -303,8 +303,7 @@ function _openLoaConfirm(loa) {
 
 function _pickLoa(name) {
   state.selectedLoa = name;
-  recalculate();
-  scheduleSave();
+  commitSheetUpdate();
 }
 
 // ── Panel rendering ─────────────────────────────────────────────────────────
@@ -423,9 +422,7 @@ function initLoaPanel() {
         delete section.dataset.loaShown;
         delete section.dataset.loaInit;
         section.classList.remove("loa-panel--selected");
-        recalculate();
-        scheduleSave();
-        updateMarshalUI();
+        commitSheetUpdate({ updateMarshal: true });
       }
     });
   }

@@ -1,23 +1,23 @@
-// Assign stable sequential IDs to every catalog item (mutates original arrays so
-// ALL code that reads DEADLANDS_CATALOG_* automatically gets the id field).
+// Every catalog item must have a stable manual id. Missing ids are fatal:
+// index-based ids would shift when catalog order changes and break saves.
 (function () {
-  function _addIds(items, prefix) {
+  function _assertStableIds(items, catalogName) {
     items.forEach((item, i) => {
-      if (!item.id) {
-        console.warn(`[catalog] ${prefix} entry at index ${i} ("${item.name}") has no id — assign one manually`);
-        item.id = prefix + String(i).padStart(3, '0');
+      if (!item || !item.id) {
+        const name = item && (item.name || item.key) ? (item.name || item.key) : "(no name)";
+        throw new Error(`[catalog] ${catalogName} entry at index ${i} ("${name}") has no stable id`);
       }
     });
   }
-  _addIds(window.DEADLANDS_CATALOG_HINDRANCES        || [], 'h');
-  _addIds(window.DEADLANDS_CATALOG_EDGES             || [], 'e');
-  _addIds(window.DEADLANDS_CATALOG_ARCHETYPE_EDGES   || [], 'ae');
-  _addIds(window.DEADLANDS_CATALOG_POWERS            || [], 'p');
-  _addIds(window.DEADLANDS_CATALOG_WEAPONS           || [], 'w');
-  _addIds(window.DEADLANDS_CATALOG_ARMOR             || [], 'a');
-  _addIds(window.DEADLANDS_CATALOG_GEAR              || [], 'g');
-  _addIds(window.DEADLANDS_CATALOG_MOUNT_GEAR        || [], 'mg');
-  _addIds(window.DEADLANDS_CATALOG_MOUNT_ARMOR       || [], 'ma');
+  _assertStableIds(window.DEADLANDS_CATALOG_HINDRANCES        || [], 'hindrances');
+  _assertStableIds(window.DEADLANDS_CATALOG_EDGES             || [], 'edges');
+  _assertStableIds(window.DEADLANDS_CATALOG_ARCHETYPE_EDGES   || [], 'archetypeEdges');
+  _assertStableIds(window.DEADLANDS_CATALOG_POWERS            || [], 'powers');
+  _assertStableIds(window.DEADLANDS_CATALOG_WEAPONS           || [], 'weapons');
+  _assertStableIds(window.DEADLANDS_CATALOG_ARMOR             || [], 'armor');
+  _assertStableIds(window.DEADLANDS_CATALOG_GEAR              || [], 'gear');
+  _assertStableIds(window.DEADLANDS_CATALOG_MOUNT_GEAR        || [], 'mountGear');
+  _assertStableIds(window.DEADLANDS_CATALOG_MOUNT_ARMOR       || [], 'mountArmor');
 })();
 
 // Main catalog registry (used everywhere via CATALOGS.type)

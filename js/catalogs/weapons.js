@@ -1,4 +1,4 @@
-window.DEADLANDS_CATALOG_WEAPONS = [
+﻿window.DEADLANDS_CATALOG_WEAPONS = [
     {
       "id": "w000",
       "name": "Баллард '72 (.56)",
@@ -9,22 +9,24 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$24",
       "weight": 11,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w001",
-      "name": "Баллард Экспресс (.44-40/.50)",
+      "name": "Баллард Экспресс (.50)",
       "group": "Винтовки",
       "range": "11/22/44",
       "damage": "2d10",
       "ap": 2,
       "price": "$30",
       "weight": 11,
-      "magazine": 1,
+      "magazine": 11,
+      "ammoCapacity": 11,
       "mode": "1В",
-      "mc": "—",
+      "mc": "d8",
       "notes": ""
     },
     {
@@ -37,8 +39,9 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$25",
       "weight": 7,
       "magazine": 15,
+      "ammoCapacity": 15,
       "mode": "1В",
-      "mc": "d8",
+      "mc": "d6",
       "notes": ""
     },
     {
@@ -51,37 +54,25 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$40",
       "weight": 7,
       "magazine": 15,
-      "mode": "1В",
-      "mc": "d8",
-      "notes": ""
-    },
-    {
-      "id": "w004",
-      "name": "Кольт-Патерсон",
-      "group": "Винтовки",
-      "range": "12/24/48",
-      "damage": "2d10",
-      "ap": 2,
-      "price": "—",
-      "weight": 7,
-      "magazine": "—",
+      "ammoCapacity": 15,
       "mode": "1В",
       "mc": "—",
       "notes": ""
     },
     {
-      "id": "w005",
-      "name": "Модель '36 (.69)",
+      "id": "w004",
+      "name": "Кольт-Патерсон Модель '36 (.69)",
       "group": "Винтовки",
       "range": "12/24/48",
       "damage": "2d10",
       "ap": 2,
       "price": "$25",
       "weight": 12,
-      "magazine": 1,
+      "magazine": 7,
+      "ammoCapacity": 7,
       "mode": "1В",
       "mc": "d8",
-      "notes": "ПЗ 2"
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w006",
@@ -93,23 +84,25 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$16",
       "weight": 8,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
-      "mc": "—",
-      "notes": ""
+      "mc": "d6",
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w007",
       "name": "Револьверная винтовка Кольта (.56)",
       "group": "Винтовки",
       "range": "12/24/48",
-      "damage": "2d10",
+      "damage": "2d8+1",
       "ap": 2,
       "price": "$24",
       "weight": 11,
       "magazine": 5,
+      "ammoCapacity": 5,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w008",
@@ -121,8 +114,9 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$20",
       "weight": 7,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
-      "mc": "—",
+      "mc": "d6",
       "notes": ""
     },
     {
@@ -135,27 +129,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$30",
       "weight": 12,
       "magazine": 34,
+      "ammoCapacity": 34,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "Уникальные патроны под заказ, обычные не подходят"
     },
     {
       "id": "w010",
       "name": "Спрингфилд '66 (.58)",
-      "group": "Винтовки",
-      "range": "12/24/30",
-      "damage": "2d10",
-      "ap": 2,
-      "price": "$8",
-      "weight": 9,
-      "magazine": 1,
-      "mode": "1В",
-      "mc": "—",
-      "notes": "ПЗ 2"
-    },
-    {
-      "id": "w011",
-      "name": "Шарпс Биг 50 (.50)",
       "group": "Винтовки",
       "range": "15/30/60",
       "damage": "2d10",
@@ -163,65 +144,88 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$20",
       "weight": 10,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
-      "mc": "—",
+      "mc": "d8",
       "notes": ""
+    },
+    {
+      "id": "w011",
+      "name": "Шарпс Биг 50 (.50)",
+      "group": "Винтовки",
+      "range": "12/24/48",
+      "damage": "2d10",
+      "ap": 2,
+      "price": "$8",
+      "weight": 9,
+      "magazine": 1,
+      "ammoCapacity": 1,
+      "mode": "1В",
+      "mc": "d6",
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w012",
       "name": "Энфилд (.58)",
       "group": "Винтовки",
-      "range": "8/15/30",
+      "range": "7/15/30",
       "damage": "2d10",
       "ap": 2,
       "price": "$12",
       "weight": 9,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w013",
-      "name": "Карабин Ле Ма (.42) & дробовик (16)",
+      "name": "Карабин Ле Ма (.42)",
       "group": "Карабины",
       "range": "10/20/40",
       "damage": "2d8",
-      "ap": 2,
+      "ap": 1,
       "price": "$35",
       "weight": 9,
-      "magazine": "—",
+      "magazine": 9,
+      "ammoCapacity": 9,
       "mode": "1В",
       "mc": "—",
-      "notes": "ПЗ 1, дробовик"
+      "notes": "Сдвоенный",
+      "bundleWith": ["w014"]
     },
     {
       "id": "w014",
-      "name": "Спенсер (.56)",
+      "name": "Дробовик Ле Ма (.16)",
       "group": "Карабины",
       "range": "6/12/24",
       "damage": "1-3d6",
       "ap": "—",
-      "price": "—",
-      "weight": 9,
-      "magazine": 7,
+      "price": "$0",
+      "weight": 0,
+      "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "ПЗ 1, Сдвоенный, Дробовик",
+      "bundledParentId": "w013",
+      "purchaseLocked": true
     },
     {
       "id": "w015",
-      "name": "Снайпер '55 (.57)",
+      "name": "Спенсер (.56)",
       "group": "Карабины",
       "range": "10/20/40",
       "damage": "2d8",
       "ap": 2,
       "price": "$25",
       "weight": 8,
-      "magazine": 1,
+      "magazine": 7,
+      "ammoCapacity": 7,
       "mode": "1В",
       "mc": "—",
-      "notes": "ПЗ 2"
+      "notes": ""
     },
     {
       "id": "w016",
@@ -233,13 +237,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$8",
       "weight": 8,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w017",
-      "name": "Двустволка (12 кал.)",
+      "name": "Двустволка",
       "group": "Ружья",
       "range": "6/12/24",
       "damage": "1-3d6",
@@ -247,13 +252,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$35",
       "weight": 8,
       "magazine": 2,
+      "ammoCapacity": 2,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "Двустволка, Дробовик"
     },
     {
       "id": "w018",
-      "name": "Двустволка обрез (12 кал.)",
+      "name": "Двустволка (обрез)",
       "group": "Ружья",
       "range": "3/6/12",
       "damage": "1-3d6",
@@ -261,27 +267,29 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$35",
       "weight": 5,
       "magazine": 2,
+      "ammoCapacity": 2,
       "mode": "1В",
       "mc": "—",
-      "notes": "дробовик"
+      "notes": "Двустволка, Дробовик"
     },
     {
       "id": "w019",
-      "name": "Многозарядное ружьё (12 кал.)",
+      "name": "Многозарядное ружьё Винчестера",
       "group": "Ружья",
       "range": "6/12/24",
       "damage": "1-3d6",
       "ap": "—",
       "price": "$35",
       "weight": 8,
-      "magazine": 2,
+      "magazine": 4,
+      "ammoCapacity": 4,
       "mode": "1В",
-      "mc": "—",
-      "notes": "дробовик"
+      "mc": "d6",
+      "notes": "Дробовик"
     },
     {
       "id": "w020",
-      "name": "Одноствольное ружьё (12 кал.)",
+      "name": "Одноствольное (простое)",
       "group": "Ружья",
       "range": "6/12/24",
       "damage": "1-3d6",
@@ -289,13 +297,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$25",
       "weight": 6,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": "дробовик"
+      "notes": "Дробовик"
     },
     {
       "id": "w021",
-      "name": "Револьверное ружьё Кольта (12 кал.)",
+      "name": "Револьверное ружьё Кольта",
       "group": "Ружья",
       "range": "6/12/24",
       "damage": "1-3d6",
@@ -303,23 +312,25 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$45",
       "weight": 10,
       "magazine": 5,
+      "ammoCapacity": 5,
       "mode": "1В",
       "mc": "d6",
-      "notes": "дробовик"
+      "notes": "Дробовик"
     },
     {
       "id": "w022",
-      "name": "Английский Дерринджер 1840 (.36)",
+      "name": "Английский дерринджер 1840г (.36)",
       "group": "Дерринджеры и пеппербоксы",
       "range": "2/4/8",
       "damage": "2d4+1",
       "ap": 1,
       "price": "$5",
       "weight": 1,
-      "magazine": 1,
+      "magazine": 8,
+      "ammoCapacity": 8,
       "mode": "1В",
       "mc": "—",
-      "notes": "потайное"
+      "notes": "ПЗ 2, Капсюльное, Потайное"
     },
     {
       "id": "w023",
@@ -330,10 +341,11 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "ap": 1,
       "price": "$12",
       "weight": 1.5,
-      "magazine": 2,
+      "magazine": 5,
+      "ammoCapacity": 5,
       "mode": "1В; 2В",
       "mc": "—",
-      "notes": "потайное"
+      "notes": "Потайное"
     },
     {
       "id": "w024",
@@ -345,9 +357,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$8",
       "weight": 0.5,
       "magazine": 2,
+      "ammoCapacity": 2,
       "mode": "1В",
       "mc": "—",
-      "notes": "потайное"
+      "notes": "Потайное"
     },
     {
       "id": "w025",
@@ -359,9 +372,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$5",
       "weight": 0.5,
       "magazine": 5,
+      "ammoCapacity": 5,
       "mode": "1В",
       "mc": "—",
-      "notes": "потайное"
+      "notes": "Потайное"
     },
     {
       "id": "w026",
@@ -373,20 +387,22 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$4",
       "weight": 0.5,
       "magazine": 1,
+      "ammoCapacity": 1,
       "mode": "1В",
       "mc": "—",
-      "notes": "потайное"
+      "notes": "Потайное"
     },
     {
       "id": "w027",
-      "name": "Пеппербокс Рунерруса (.22)",
+      "name": "Пеппербокс Рупертуса (.22)",
       "group": "Дерринджеры и пеппербоксы",
-      "range": "2/4/8",
+      "range": "3/5/10",
       "damage": "2d4+1",
-      "ap": 1,
-      "price": "—",
-      "weight": 0.5,
+      "ap": "—",
+      "price": "$6",
+      "weight": 1,
       "magazine": 8,
+      "ammoCapacity": 8,
       "mode": "1В",
       "mc": "—",
       "notes": ""
@@ -400,14 +416,33 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "ap": 1,
       "price": "$6",
       "weight": 1,
-      "magazine": 1,
+      "magazine": 2,
+      "ammoCapacity": 2,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "Сдвоенный, Потайное",
+      "bundleWith": ["w072"]
+    },
+    {
+      "id": "w072",
+      "name": "Пистолетный кинжал Вессона",
+      "group": "Дерринджеры и пеппербоксы",
+      "range": "—",
+      "damage": "Сила+d4",
+      "ap": "—",
+      "price": "$0",
+      "weight": 0,
+      "magazine": 0,
+      "ammoCapacity": 0,
+      "mode": "—",
+      "mc": "—",
+      "notes": "Сдвоенный, Потайное",
+      "bundledParentId": "w028",
+      "purchaseLocked": true
     },
     {
       "id": "w029",
-      "name": "Армейский Кольт '60 (.44)",
+      "name": "Армейский кольт '60 (.44)",
       "group": "Револьверы ОД",
       "range": "6/12/24",
       "damage": "2d6+1",
@@ -415,6 +450,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$15",
       "weight": 3,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
       "mc": "—",
       "notes": ""
@@ -429,13 +465,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$8",
       "weight": 3,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
       "mc": "—",
-      "notes": "ПЗ 2"
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w031",
-      "name": "Кольт «Драгун»",
+      "name": "Кольт «Драгун» (.44)",
       "group": "Револьверы ОД",
       "range": "5/10/20",
       "damage": "2d6+1",
@@ -443,8 +480,9 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$11",
       "weight": 4,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
-      "mc": "—",
+      "mc": "d6",
       "notes": ""
     },
     {
@@ -457,8 +495,9 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$17",
       "weight": 2,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
-      "mc": "d6",
+      "mc": "—",
       "notes": ""
     },
     {
@@ -471,9 +510,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$12",
       "weight": 5,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
       "mc": "d8",
-      "notes": ""
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w034",
@@ -482,37 +522,58 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "range": "8/15/30",
       "damage": "2d6+1",
       "ap": 1,
-      "price": "$500",
+      "price": "$150",
       "weight": 3,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
-      "mc": "d6",
+      "mc": "—",
       "notes": ""
     },
     {
       "id": "w035",
-      "name": "Ле Ма (.40) & дробовик (16)",
+      "name": "Револьвер Ле Ма (.40)",
       "group": "Револьверы ОД",
       "range": "6/12/24",
-      "damage": "2d6 / 1-3d6",
+      "damage": "2d6",
       "ap": 1,
       "price": "$25",
       "weight": 4,
-      "magazine": "9+1",
+      "magazine": 9,
+      "ammoCapacity": 9,
       "mode": "1В; 6В",
       "mc": "d6",
-      "notes": "дробовик"
+      "notes": "Сдвоенный",
+      "bundleWith": ["w073"]
+    },
+    {
+      "id": "w073",
+      "name": "Револьверный дробовик Ле Ма (.16)",
+      "group": "Револьверы ОД",
+      "range": "2/4/9",
+      "damage": "1-3d6",
+      "ap": "—",
+      "price": "$0",
+      "weight": 0,
+      "magazine": 1,
+      "ammoCapacity": 1,
+      "mode": "1В",
+      "mc": "—",
+      "notes": "ПЗ, Сдвоенный, Дробовик",
+      "bundledParentId": "w035",
+      "purchaseLocked": true
     },
     {
       "id": "w036",
-      "name": "Семизарядник Муара (.32)",
+      "name": "Семизарядник Мура (.32)",
       "group": "Револьверы ОД",
       "range": "6/12/24",
-      "damage": "2d6+1",
+      "damage": "2d6",
       "ap": 1,
-      "price": "—",
-      "weight": 3,
+      "price": "$13",
+      "weight": 2,
       "magazine": 7,
+      "ammoCapacity": 7,
       "mode": "1В; 6В",
       "mc": "—",
       "notes": ""
@@ -521,33 +582,35 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "id": "w037",
       "name": "Смит-Вессон №3 (.44)",
       "group": "Револьверы ОД",
-      "range": "5/10/20",
-      "damage": "2d6",
+      "range": "6/12/24",
+      "damage": "2d6+1",
       "ap": 1,
       "price": "$13",
-      "weight": 2,
+      "weight": 3,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
-      "mc": "d6",
-      "notes": "экстрактор"
+      "mc": "—",
+      "notes": "Экстрактор"
     },
     {
       "id": "w038",
       "name": "Флотский Кольт (.36)",
       "group": "Револьверы ОД",
       "range": "5/10/20",
-      "damage": "2d6+1",
+      "damage": "2d6",
       "ap": 1,
       "price": "$10",
       "weight": 2.5,
       "magazine": 6,
+      "ammoCapacity": 6,
       "mode": "1В; 6В",
       "mc": "—",
       "notes": ""
     },
     {
       "id": "w039",
-      "name": "Армейский Кольт '77 (.44)",
+      "name": "Армейский кольт '77 (.44)",
       "group": "Револьверы ДД",
       "range": "6/12/24",
       "damage": "2d6+1",
@@ -555,7 +618,8 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$18",
       "weight": 2.5,
       "magazine": 6,
-      "mode": "1В; 6В",
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
       "mc": "—",
       "notes": ""
     },
@@ -563,27 +627,29 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "id": "w040",
       "name": "Бомон-Адамс (.36)",
       "group": "Револьверы ДД",
-      "range": "5/10/20",
+      "range": "6/12/24",
       "damage": "2d6",
       "ap": 1,
       "price": "$10",
       "weight": 2.5,
-      "magazine": 6,
-      "mode": "1В; 6В",
+      "magazine": 5,
+      "ammoCapacity": 5,
+      "mode": "1В; 2В",
       "mc": "—",
       "notes": ""
     },
     {
       "id": "w041",
-      "name": "Вебей КИ.П. (.45)",
+      "name": "Веблей К.И.П. (.45)",
       "group": "Револьверы ДД",
       "range": "5/10/20",
-      "damage": "2d6+1",
+      "damage": "2d6",
       "ap": 1,
       "price": "$18",
       "weight": 2,
       "magazine": 6,
-      "mode": "1В; 6В",
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
       "mc": "—",
       "notes": ""
     },
@@ -597,7 +663,8 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$14",
       "weight": 2,
       "magazine": 6,
-      "mode": "1В; 6В",
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
       "mc": "—",
       "notes": ""
     },
@@ -605,33 +672,20 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "id": "w043",
       "name": "Кольт «Молния» (.38)",
       "group": "Револьверы ДД",
-      "range": "6/12/24",
-      "damage": "2d6+1",
+      "range": "5/10/20",
+      "damage": "2d6",
       "ap": 1,
       "price": "$13",
       "weight": 2,
       "magazine": 6,
-      "mode": "1В; 6В",
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
       "mc": "—",
       "notes": ""
     },
     {
       "id": "w044",
-      "name": "Кольт «Фронтир» (.32-20)",
-      "group": "Револьверы ДД",
-      "range": "5/10/20",
-      "damage": "2d6",
-      "ap": 1,
-      "price": "$8",
-      "weight": 2,
-      "magazine": 6,
-      "mode": "1В; 6В",
-      "mc": "—",
-      "notes": ""
-    },
-    {
-      "id": "w045",
-      "name": "Револьвер Старра (.44)",
+      "name": "Кольт «Фронтир» (.20-32)",
       "group": "Револьверы ДД",
       "range": "5/10/20",
       "damage": "2d4+1",
@@ -639,55 +693,74 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$8",
       "weight": 1.5,
       "magazine": 6,
-      "mode": "1В; 6В",
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
       "mc": "—",
-      "notes": "ПЗ 2"
+      "notes": ""
+    },
+    {
+      "id": "w045",
+      "name": "Револьвер Старра (.44)",
+      "group": "Револьверы ДД",
+      "range": "6/12/24",
+      "damage": "2d6+1",
+      "ap": 1,
+      "price": "$11",
+      "weight": 3,
+      "magazine": 6,
+      "ammoCapacity": 6,
+      "mode": "1В; 2В",
+      "mc": "—",
+      "notes": "ПЗ 2, Капсюльное"
     },
     {
       "id": "w046",
-      "name": "Гатлинг-винтовка (.45)",
+      "name": "Винтовка Гатлинга (.45)",
       "group": "Оружие Гатлинга",
       "range": "12/24/48",
       "damage": "2d8",
       "ap": 2,
-      "price": "$1200",
+      "price": "$600",
       "weight": 13,
       "magazine": 12,
+      "ammoCapacity": 12,
       "mode": "авто 2",
       "mc": "d6",
       "notes": ""
     },
     {
       "id": "w047",
-      "name": "Гатлинг-дробовик",
+      "name": "Дробовик Гатлинга",
       "group": "Оружие Гатлинга",
       "range": "6/12/24",
       "damage": "1-3d6",
-      "ap": 2,
-      "price": "$1500",
+      "ap": "—",
+      "price": "$750",
       "weight": 15,
       "magazine": 12,
+      "ammoCapacity": 12,
       "mode": "авто 2",
       "mc": "d8",
-      "notes": "дробовик"
+      "notes": "Двустволка, Дробовик"
     },
     {
       "id": "w048",
-      "name": "Гатлинг-револьвер (.45)",
+      "name": "Револьвер Гатлинга (.45)",
       "group": "Оружие Гатлинга",
       "range": "6/12/24",
       "damage": "2d6+1",
       "ap": 1,
-      "price": "$800",
+      "price": "$900",
       "weight": 5,
       "magazine": 12,
+      "ammoCapacity": 12,
       "mode": "авто 2",
       "mc": "—",
       "notes": ""
     },
     {
       "id": "w049",
-      "name": "Пулемёт Гатлинга (.45)",
+      "name": "Пулемет Гатлинга (.45)",
       "group": "Оружие Гатлинга",
       "range": "12/24/48",
       "damage": "2d8",
@@ -695,9 +768,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$1500",
       "weight": 40,
       "magazine": 100,
+      "ammoCapacity": 0,
       "mode": "авто 3",
       "mc": "—",
-      "notes": "стационарное"
+      "notes": "Стационарное"
     },
     {
       "id": "w050",
@@ -709,9 +783,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 0.5,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "1В",
       "mc": "—",
-      "notes": ""
+      "notes": "см. описание"
     },
     {
       "id": "w051",
@@ -723,9 +798,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 2,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "1В",
       "mc": "—",
-      "notes": "см. описание"
+      "notes": ""
     },
     {
       "id": "w052",
@@ -737,6 +813,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 0.5,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "МШ"
@@ -751,6 +828,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$6",
       "weight": 1,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "МШ"
@@ -759,12 +837,13 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "id": "w054",
       "name": "4 динамитные шашки",
       "group": "Взрывчатка",
-      "range": "2/4/8",
+      "range": "2/3/6",
       "damage": "4d6",
       "ap": "—",
       "price": "$12",
       "weight": 2,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "СШ"
@@ -775,13 +854,14 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "group": "Взрывчатка",
       "range": "1/2/4",
       "damage": "5d6",
-      "ap": "—",
+      "ap": 4,
       "price": "$24",
       "weight": 4,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
-      "notes": "БШ; рекр."
+      "notes": "БШ; тяж. ор."
     },
     {
       "id": "w056",
@@ -793,6 +873,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$1.25",
       "weight": 0.5,
       "magazine": 1,
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "БШ"
@@ -807,6 +888,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 3,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": ""
@@ -821,6 +903,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$1",
       "weight": 1,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": ""
@@ -835,6 +918,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$10",
       "weight": 2,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "При подъёме на атаке вместо дополнительного урона защита цели уменьшается на 1, дальность +2"
@@ -849,6 +933,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 5,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Защита +1, дальность +1, Двуручное"
@@ -863,6 +948,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$4",
       "weight": 3,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Уловка против Ловкости (навык Драки). Успех: защита −2 до начала следующего хода врага. Подъём: враг спутан и в шоке. Дальность +2"
@@ -877,6 +963,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$2",
       "weight": 1,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": ""
@@ -891,6 +978,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$4",
       "weight": 2,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": ""
@@ -905,6 +993,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$2",
       "weight": 4,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 20"
@@ -919,6 +1008,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$2",
       "weight": 3,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 50"
@@ -933,6 +1023,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$3",
       "weight": 5,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 50"
@@ -947,6 +1038,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$4",
       "weight": 6,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 50"
@@ -961,6 +1053,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$5",
       "weight": 8,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 50"
@@ -975,6 +1068,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$1",
       "weight": 4,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 20"
@@ -989,6 +1083,7 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "50¢",
       "weight": 1,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 60"
@@ -1003,8 +1098,10 @@ window.DEADLANDS_CATALOG_WEAPONS = [
       "price": "$2",
       "weight": 2,
       "magazine": "—",
+      "ammoCapacity": 0,
       "mode": "—",
       "mc": "—",
       "notes": "Кол-во: 20"
     }
 ];
+

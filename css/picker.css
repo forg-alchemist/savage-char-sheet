@@ -101,8 +101,9 @@
   display: flex;
   flex-direction: column;
   min-width: 180px;
+  max-height: 60vh;
+  overflow-y: auto;
   z-index: 50;
-  overflow: hidden;
 }
 
 .picker-filter-option {
@@ -298,6 +299,7 @@
 .picker-item-desc        { font-size: 0.85rem; color: var(--ink); margin-top: 4px; opacity: 0.88; line-height: 1.38; }
 .picker-item-desc--minor { font-size: 0.78rem; font-weight: normal; color: var(--muted); margin-top: 4px; opacity: 0.8; line-height: 1.35; }
 
+.picker-weapon-stats,
 .picker-armor-stats {
   display: flex;
   flex-wrap: wrap;
@@ -306,10 +308,21 @@
   opacity: 1;
 }
 
+.picker-weapon-stat,
 .picker-armor-stat {
   font-weight: 900;
   white-space: nowrap;
 }
+
+.picker-weapon-stat--range { color: #365f75; }
+.picker-weapon-stat--damage { color: var(--red); }
+.picker-weapon-stat--ap { color: #7f1c16; }
+.picker-weapon-stat--magazine { color: #805814; }
+.picker-weapon-stat--mode { color: #514077; }
+.picker-weapon-stat--strength { color: #8a6500; }
+.picker-weapon-stat--price { color: #2f6f43; }
+.picker-weapon-stat--weight { color: #4e5b61; }
+.picker-weapon-stat--notes { color: #5b3518; font-style: italic; }
 
 .picker-armor-stat--armor { color: var(--red); }
 .picker-armor-stat--sectors { color: #5b3518; }
@@ -359,6 +372,22 @@
 }
 
 .picker-item-add.picker-item-add--locked:hover { background: rgba(169,20,15,0.12); border-color: var(--red); }
+
+.picker-item-add.picker-item-add--bundle-child,
+.picker-item-add.picker-item-add--bundle-child:hover {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: #8b6f13;
+  color: #fff8ee;
+  font-size: 1.05rem;
+  cursor: default;
+  opacity: 0.78;
+  text-transform: none;
+}
 
 /* ── Badges ── */
 .degree-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; margin-right: 4px; vertical-align: middle; }
